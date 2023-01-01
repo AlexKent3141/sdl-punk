@@ -138,32 +138,26 @@ void punk_begin()
 
 void punk_end()
 {
-  // TODO: for now just draw all widgets with width 60 pixels.
-  // TODO: only supporting horizontal layout, so height is inherited from that.
-  struct layout_state* layout = &g_punk_ctx->layouts[0];
-
-  // TODO: Should probably to a clearing pass followed by rendering.
   // Resolve updates to the texture and render.
-  const struct widget_state* w;
+  // Done in two passes: clearing widgets and then drawing new widgets.
+  struct widget_state* w;
   for (int i = 0; i < g_punk_ctx->num_widgets; i++)
   {
     w = &g_punk_ctx->widgets[i];
-
-    SDL_Rect rect;
-    rect.x = w->loc.x;
-    rect.y = w->loc.y;
-    rect.w = 60;
-    rect.h = layout->height;
-
     if (w->currently_rendered && !w->needs_to_be_rendered)
     {
       // Clear the relevant part of the texture.
-      clear_rect(&rect);
+      clear_rect(&w->loc);
     }
-    else if (!w->currently_rendered && w->needs_to_be_rendered)
+  }
+
+  for (int i = 0; i < g_punk_ctx->num_widgets; i++)
+  {
+    w = &g_punk_ctx->widgets[i];
+    if (!w->currently_rendered && w->needs_to_be_rendered)
     {
       // Draw the widget on the texture.
-      fill_rect(&rect, g_punk_ctx->foreground_col);
+      fill_rect(&w->loc, g_punk_ctx->foreground_col);
     }
   }
 }
@@ -186,24 +180,24 @@ void punk_begin_horizontal_layout(int n, int width, int height)
   if (layout_index > 0)
   {
     struct layout_state* prev_layout = &g_punk_ctx->layouts[layout_index - 1];
-    layout->current_child.x = prev_layout->current_child.x;
-    layout->current_child.y = prev_layout->current_child.y;
-    layout->current_child.w = width / n;
-    layout->current_child.h = height;
-
     layout->width = width == PUNK_FILL ? prev_layout->current_child.w : width;
     layout->height = height == PUNK_FILL ? prev_layout->current_child.h : height;
+
+    layout->current_child.x = prev_layout->current_child.x;
+    layout->current_child.y = prev_layout->current_child.y;
+    layout->current_child.w = layout->width / n;
+    layout->current_child.h = layout->height;
   }
   else
   {
-    layout->current_child.x = 0;
-    layout->current_child.y = 0;
-    layout->current_child.w = width / n;
-    layout->current_child.h = height;
-
     // The root layout fills the whole area (unless otherwise specified).
     layout->width = width == PUNK_FILL ? g_punk_ctx->width : width;
     layout->height = height == PUNK_FILL ? g_punk_ctx->height : height;
+
+    layout->current_child.x = 0;
+    layout->current_child.y = 0;
+    layout->current_child.w = layout->width / n;
+    layout->current_child.h = layout->height;
   }
 
   ++g_punk_ctx->num_layouts;
@@ -225,7 +219,7 @@ struct widget_state* find_widget(enum widget_type type, const SDL_Rect* loc)
   for (int i = 0; i < g_punk_ctx->num_widgets; i++)
   {
     struct widget_state* w = &g_punk_ctx->widgets[i];
-    if (w->type == type && memcmp(&w->loc, loc) == 0)
+    if (w->type == type && memcmp(&w->loc, loc, sizeof(SDL_Rect)) == 0)
     {
       return w;
     }

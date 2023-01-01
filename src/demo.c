@@ -32,6 +32,8 @@ int main()
   // Setup punk.
   punk_init(renderer, WIDTH, HEIGHT);
 
+  int button_visible = 0;
+
   SDL_bool stop = SDL_FALSE;
   SDL_Event event;
   while (!stop)
@@ -40,6 +42,9 @@ int main()
     {
       switch (event.type)
       {
+        case SDL_KEYDOWN:
+          button_visible = 1 - button_visible;
+          break;
         case SDL_QUIT:
           stop = SDL_TRUE;
           break;
@@ -56,6 +61,14 @@ int main()
     if (punk_button("hello"))
     {
       printf("Hello world!\n");
+    }
+
+    if (button_visible)
+    {
+      if (punk_button("maybe"))
+      {
+        printf("Maybe!\n");
+      }
     }
 
     punk_end_horizontal_layout();
