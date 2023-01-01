@@ -31,7 +31,8 @@ DLLEXPORT void punk_end();
 DLLEXPORT void punk_render();
 
 DLLEXPORT void punk_begin_horizontal_layout(int n, int width, int height);
-DLLEXPORT void punk_end_horizontal_layout();
+DLLEXPORT void punk_begin_vertical_layout(int n, int width, int height);
+DLLEXPORT void punk_end_layout();
 
 DLLEXPORT int punk_button(const char* text);
 

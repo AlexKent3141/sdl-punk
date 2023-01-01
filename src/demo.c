@@ -32,7 +32,7 @@ int main()
   // Setup punk.
   punk_init(renderer, WIDTH, HEIGHT);
 
-  int button_visible = 0;
+  int key_button_visible = 0;
 
   SDL_bool stop = SDL_FALSE;
   SDL_Event event;
@@ -43,7 +43,7 @@ int main()
       switch (event.type)
       {
         case SDL_KEYDOWN:
-          button_visible = 1 - button_visible;
+          key_button_visible = 1 - key_button_visible;
           break;
         case SDL_QUIT:
           stop = SDL_TRUE;
@@ -56,14 +56,14 @@ int main()
     // Define the GUI here.
     punk_begin();
 
-    punk_begin_horizontal_layout(2, PUNK_FILL, 50);
+    punk_begin_horizontal_layout(4, PUNK_FILL, PUNK_FILL);
 
     if (punk_button("hello"))
     {
       printf("Hello world!\n");
     }
 
-    if (button_visible)
+    if (key_button_visible)
     {
       if (punk_button("maybe"))
       {
@@ -71,7 +71,15 @@ int main()
       }
     }
 
-    punk_end_horizontal_layout();
+    punk_begin_vertical_layout(3, PUNK_FILL, PUNK_FILL);
+
+    punk_button("V1");
+    punk_button("V2");
+    punk_button("V3");
+
+    punk_end_layout(); // Vertical layout
+
+    punk_end_layout(); // Horizontal layout
 
     punk_end();
 

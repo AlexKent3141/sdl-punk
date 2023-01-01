@@ -8,10 +8,12 @@
 
 #define MAX_WIDGETS 100
 #define MAX_NESTED_LAYOUTS 10
+#define WIDGET_BORDER 1
 
 enum layout_type
 {
-  HORIZONTAL
+  HORIZONTAL,
+  VERTICAL
 };
 
 enum widget_type
@@ -157,7 +159,22 @@ void punk_end()
     if (!w->currently_rendered && w->needs_to_be_rendered)
     {
       // Draw the widget on the texture.
-      fill_rect(&w->loc, g_punk_ctx->foreground_col);
+      SDL_Rect inner_rect;
+      memcpy(&inner_rect, &w->loc, sizeof(SDL_Rect));
+      inner_rect.x += WIDGET_BORDER;
+      inner_rect.y += WIDGET_BORDER;
+      inner_rect.w -= 2*WIDGET_BORDER;
+      inner_rect.h -= 2*WIDGET_BORDER;
+      switch (w->type)
+      {
+        case BUTTON:
+          fill_rect(&w->loc, g_punk_ctx->background_col);
+          fill_rect(&inner_rect, g_punk_ctx->foreground_col);
+          break;
+        default:
+          assert(0);
+          break;
+      }
     }
   }
 }
@@ -203,15 +220,45 @@ void punk_begin_horizontal_layout(int n, int width, int height)
   ++g_punk_ctx->num_layouts;
 }
 
-void punk_end_horizontal_layout()
+void punk_begin_vertical_layout(int n, int width, int height)
+{
+  int layout_index = g_punk_ctx->num_layouts;
+
+  struct layout_state* layout = &g_punk_ctx->layouts[layout_index];
+
+  layout->type = VERTICAL;
+  layout->num_items = n;
+
+  // The current offset for this layout is inherited from the outer layout.
+  if (layout_index > 0)
+  {
+    struct layout_state* prev_layout = &g_punk_ctx->layouts[layout_index - 1];
+    layout->width = width == PUNK_FILL ? prev_layout->current_child.w : width;
+    layout->height = height == PUNK_FILL ? prev_layout->current_child.h : height;
+
+    layout->current_child.x = prev_layout->current_child.x;
+    layout->current_child.y = prev_layout->current_child.y;
+    layout->current_child.w = layout->width;
+    layout->current_child.h = layout->height / n;
+  }
+  else
+  {
+    // The root layout fills the whole area (unless otherwise specified).
+    layout->width = width == PUNK_FILL ? g_punk_ctx->width : width;
+    layout->height = height == PUNK_FILL ? g_punk_ctx->height : height;
+
+    layout->current_child.x = 0;
+    layout->current_child.y = 0;
+    layout->current_child.w = layout->width;
+    layout->current_child.h = layout->height / n;
+  }
+
+  ++g_punk_ctx->num_layouts;
+}
+
+void punk_end_layout()
 {
   --g_punk_ctx->num_layouts;
-
-  // Step to the next position in the current layout.
-  struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
-
-  // TODO: Assume on horizontal for now.
-  layout->current_child.x += layout->current_child.w;
 }
 
 struct widget_state* find_widget(enum widget_type type, const SDL_Rect* loc)
@@ -250,7 +297,18 @@ int punk_button(const char* text)
   }
 
   // Increment the current offset in the (horizontal) layout.
-  layout->current_child.x += layout->current_child.w;
+  switch (layout->type)
+  {
+    case HORIZONTAL:
+      layout->current_child.x += layout->current_child.w;
+      break;
+    case VERTICAL:
+      layout->current_child.y += layout->current_child.h;
+      break;
+    default:
+      assert(0);
+      break;
+  }
 
   // TODO: need to perform click detection.
   return 0;
