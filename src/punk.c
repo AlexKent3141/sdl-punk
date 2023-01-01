@@ -168,6 +168,11 @@ void punk_end()
   }
 }
 
+void punk_render()
+{
+  SDL_RenderCopy(g_punk_ctx->renderer, g_punk_ctx->tex, NULL, NULL);
+}
+
 void punk_begin_horizontal_layout(int n, int width, int height)
 {
   int layout_index = g_punk_ctx->num_layouts;

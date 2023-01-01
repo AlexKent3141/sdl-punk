@@ -4,20 +4,27 @@ project(punk)
 include(cmake/CPM.cmake)
 
 CPMAddPackage(
-  NAME sdl2
+  NAME SDL2
   GIT_REPOSITORY https://github.com/efornara/sdl2
   GIT_TAG release-2.0.18)
 
-add_library(punk
+add_library(punk SHARED
   include/punk.h
   src/punk.c)
 
 target_include_directories(punk
   PUBLIC
     include/
-  PRIVATE
-    "${sdl2_SOURCE_DIR}/include")
+    "${SDL2_SOURCE_DIR}/include")
 
 target_link_libraries(punk
   PUBLIC
-    sdl2)
+    SDL2)
+
+# Create the demo executable.
+add_executable(punk_demo
+  src/demo.c)
+
+target_link_libraries(punk_demo
+  PRIVATE
+    punk)
