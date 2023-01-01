@@ -7,7 +7,7 @@
 
 // Forward declare the SDL types we depend on.
 struct SDL_Renderer;
-struct SDL_Event;
+union SDL_Event;
 
 struct punk_context;
 extern struct punk_context* g_punk_ctx = NULL;
@@ -15,13 +15,13 @@ extern struct punk_context* g_punk_ctx = NULL;
 void punk_init(struct SDL_Renderer*, int, int);
 void punk_quit();
 
-void punk_handle_event(struct SDL_Event*);
+void punk_handle_event(union SDL_Event*);
 
 // These functions are used to indicate when the UI definition starts and ends.
 void punk_begin();
 void punk_end();
 
-void punk_begin_horizontal_layout(int width, int height);
+void punk_begin_horizontal_layout(int n, int width, int height);
 void punk_end_horizontal_layout();
 
 int punk_button(const char* text);
