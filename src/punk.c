@@ -28,6 +28,8 @@ struct widget_state
   SDL_Rect loc;
 
   // Flags used to check whether we need to render now.
+  int currently_active;
+  int needs_to_be_active;
   int currently_rendered;
   int needs_to_be_rendered;
 };
@@ -53,8 +55,9 @@ struct punk_context
   // The texture we incrementally update as the UI changes state.
   // This is owned by punk.
   SDL_Texture* tex;
-  uint32_t background_col;
-  uint32_t foreground_col;
+  uint32_t back_colour;
+  uint32_t fore_colour;
+  uint32_t active_colour; // Selected widget
 
   // Keep track of all widgets we've encountered so far.
   struct widget_state widgets[MAX_WIDGETS];
@@ -79,7 +82,7 @@ void fill_rect(SDL_Rect* rect, uint32_t col)
 
 void clear_rect(SDL_Rect* rect)
 {
-  fill_rect(rect, g_punk_ctx->background_col);
+  fill_rect(rect, g_punk_ctx->back_colour);
 }
 
 void punk_init(SDL_Renderer* renderer, int width, int height)
@@ -103,9 +106,10 @@ void punk_init(SDL_Renderer* renderer, int width, int height)
   // Make the texture fully transparent and cache the transparent colour.
   SDL_Surface* surface;
   SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &surface);
-  g_punk_ctx->background_col = SDL_MapRGBA(surface->format, 255, 0, 0, 0);
-  g_punk_ctx->foreground_col = SDL_MapRGBA(surface->format, 100, 100, 100, 255);
-  SDL_FillRect(surface, NULL, g_punk_ctx->background_col);
+  g_punk_ctx->back_colour = SDL_MapRGBA(surface->format, 255, 0, 0, 0);
+  g_punk_ctx->fore_colour = SDL_MapRGBA(surface->format, 150, 150, 150, 255);
+  g_punk_ctx->active_colour = SDL_MapRGBA(surface->format, 170, 170, 170, 255);
+  SDL_FillRect(surface, NULL, g_punk_ctx->back_colour);
   SDL_UnlockTexture(g_punk_ctx->tex);
 
   memset(g_punk_ctx->widgets, 0, MAX_WIDGETS * sizeof(struct widget_state));
@@ -148,6 +152,11 @@ void punk_handle_event(SDL_Event* e)
   }
 }
 
+int hit_test(const SDL_Rect* r, int32_t x, int32_t y)
+{
+  return x > r->x && x < r->x + r->w && y > r->y && y < r->y + r->h;
+}
+
 // These functions are used to indicate when the UI definition starts and ends.
 void punk_begin()
 {
@@ -156,6 +165,8 @@ void punk_begin()
   for (int i = 0; i < g_punk_ctx->num_widgets; i++)
   {
     w = &g_punk_ctx->widgets[i];
+    w->currently_active = w->needs_to_be_active;
+    w->needs_to_be_active = 0;
     w->currently_rendered = w->needs_to_be_rendered;
     w->needs_to_be_rendered = 0;
   }
@@ -179,7 +190,9 @@ void punk_end()
   for (int i = 0; i < g_punk_ctx->num_widgets; i++)
   {
     w = &g_punk_ctx->widgets[i];
-    if (!w->currently_rendered && w->needs_to_be_rendered)
+    int active_changed = w->currently_active != w->needs_to_be_active;
+    int becomes_visible = !w->currently_rendered && w->needs_to_be_rendered;
+    if (becomes_visible || (w->needs_to_be_rendered && active_changed))
     {
       // Draw the widget on the texture.
       SDL_Rect inner_rect;
@@ -191,8 +204,10 @@ void punk_end()
       switch (w->type)
       {
         case BUTTON:
-          fill_rect(&w->loc, g_punk_ctx->background_col);
-          fill_rect(&inner_rect, g_punk_ctx->foreground_col);
+          fill_rect(&w->loc, g_punk_ctx->back_colour);
+          uint32_t col = w->needs_to_be_active
+            ? g_punk_ctx->active_colour : g_punk_ctx->fore_colour;
+          fill_rect(&inner_rect, col);
           break;
         default:
           assert(0);
@@ -301,11 +316,6 @@ struct widget_state* find_widget(enum widget_type type, const SDL_Rect* loc)
   return NULL;
 }
 
-int hit(const SDL_Rect* r, int32_t x, int32_t y)
-{
-  return x > r->x && x < r->x + r->w && y > r->y && y < r->y + r->h;
-}
-
 int punk_button(const char* text)
 {
   // Where will this button be rendered? This is inherited from the current layout position.
@@ -323,6 +333,7 @@ int punk_button(const char* text)
     w = &g_punk_ctx->widgets[g_punk_ctx->num_widgets++];
     w->type = BUTTON;
     memcpy(&w->loc, &layout->current_child, sizeof(SDL_Rect));
+    w->currently_active = 0;
     w->currently_rendered = 0;
     w->needs_to_be_rendered = 1;
   }
@@ -341,9 +352,13 @@ int punk_button(const char* text)
       break;
   }
 
-  // Check whether the button has been clicked.
-  SDL_MouseButtonEvent* e = &g_punk_ctx->click;
-  if (e->type == 0) return 0;
+  // Check the next active state of the widget.
+  SDL_MouseMotionEvent* motion = &g_punk_ctx->motion;
+  w->needs_to_be_active = motion->type != 0 && hit_test(&w->loc, motion->x, motion->y);
 
-  return hit(&w->loc, e->x, e->y);
+  // Check whether the button has been clicked.
+  SDL_MouseButtonEvent* click = &g_punk_ctx->click;
+  if (click->type == 0) return 0;
+
+  return hit_test(&w->loc, click->x, click->y);
 }
