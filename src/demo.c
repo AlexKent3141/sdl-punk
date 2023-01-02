@@ -51,6 +51,8 @@ int main()
         default:
           break;
       }
+
+      punk_handle_event(&event);
     }
 
     // Define the GUI here.
@@ -58,30 +60,26 @@ int main()
 
     punk_begin_horizontal_layout(4, PUNK_FILL, PUNK_FILL);
 
-    if (punk_button("hello"))
-    {
-      printf("Hello world!\n");
-    }
+    if (punk_button("hello")) printf("Hello world!\n");
 
     if (key_button_visible)
     {
-      if (punk_button("maybe"))
-      {
-        printf("Maybe!\n");
-      }
+      if (punk_button("maybe")) printf("Maybe!\n");
     }
 
     punk_begin_vertical_layout(3, PUNK_FILL, PUNK_FILL);
 
-    punk_button("V1");
-    punk_button("V2");
-    punk_button("V3");
+    if (punk_button("V1")) printf("V1!\n");
+    if (punk_button("V2")) printf("V2!\n");
+    if (punk_button("V3")) printf("Punk!\n");
 
     punk_end_layout(); // Vertical layout
 
     punk_end_layout(); // Horizontal layout
 
     punk_end();
+
+    fflush(stdout);
 
     // Clear the screen and re-draw.
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);

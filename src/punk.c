@@ -60,6 +60,10 @@ struct punk_context
   struct widget_state widgets[MAX_WIDGETS];
   int num_widgets;
 
+  // Event status.
+  SDL_MouseMotionEvent motion;
+  SDL_MouseButtonEvent click;
+
   // Keep track of where we are in each nested layout.
   struct layout_state layouts[MAX_NESTED_LAYOUTS];
   int num_layouts;
@@ -109,6 +113,10 @@ void punk_init(SDL_Renderer* renderer, int width, int height)
 
   memset(g_punk_ctx->layouts, 0, MAX_NESTED_LAYOUTS * sizeof(struct layout_state));
   g_punk_ctx->num_layouts = 0;
+
+  // Invalidate the cached events.
+  g_punk_ctx->motion.type = 0;
+  g_punk_ctx->click.type = 0;
 }
 
 void punk_quit()
@@ -122,7 +130,22 @@ void punk_quit()
 
 void punk_handle_event(SDL_Event* e)
 {
-  // TODO: need to watch out for relevant mouse clicks etc.
+  switch (e->type)
+  {
+    case SDL_MOUSEBUTTONDOWN:
+    {
+      if (e->button.button == SDL_BUTTON_LEFT)
+      {
+        memcpy(&g_punk_ctx->click, &e->button, sizeof(SDL_MouseButtonEvent));
+      }
+      break;
+    }
+    case SDL_MOUSEMOTION:
+    {
+      memcpy(&g_punk_ctx->motion, &e->motion, sizeof(SDL_MouseMotionEvent));
+      break;
+    }
+  }
 }
 
 // These functions are used to indicate when the UI definition starts and ends.
@@ -177,6 +200,9 @@ void punk_end()
       }
     }
   }
+
+  // Invalidate cached click event.
+  g_punk_ctx->click.type = 0;
 }
 
 void punk_render()
@@ -275,6 +301,11 @@ struct widget_state* find_widget(enum widget_type type, const SDL_Rect* loc)
   return NULL;
 }
 
+int hit(const SDL_Rect* r, int32_t x, int32_t y)
+{
+  return x > r->x && x < r->x + r->w && y > r->y && y < r->y + r->h;
+}
+
 int punk_button(const char* text)
 {
   // Where will this button be rendered? This is inherited from the current layout position.
@@ -310,6 +341,9 @@ int punk_button(const char* text)
       break;
   }
 
-  // TODO: need to perform click detection.
-  return 0;
+  // Check whether the button has been clicked.
+  SDL_MouseButtonEvent* e = &g_punk_ctx->click;
+  if (e->type == 0) return 0;
+
+  return hit(&w->loc, e->x, e->y);
 }
