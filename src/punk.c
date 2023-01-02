@@ -12,6 +12,8 @@
 #define MAX_WIDGETS 100
 #define MAX_NESTED_LAYOUTS 10
 #define WIDGET_BORDER 1
+#define MAX_STRINGS_RENDERED 100
+#define MAX_CAPTION_LENGTH 50
 
 enum layout_type
 {
@@ -35,6 +37,11 @@ struct widget_state
   int needs_to_be_active;
   int currently_rendered;
   int needs_to_be_rendered;
+
+  // Widget specific data.
+  // TODO: we'll probably need to do something a bit cleverer here when more
+  // widget types get implemented.
+  char caption[MAX_CAPTION_LENGTH];
 };
 
 struct layout_state
@@ -44,6 +51,12 @@ struct layout_state
   int width;
   int height;
   int num_items;
+};
+
+struct text_and_surface
+{
+  const char* text;
+  SDL_Surface* surf;
 };
 
 struct punk_context
@@ -64,6 +77,11 @@ struct punk_context
   uint32_t back_colour;
   uint32_t fore_colour;
   uint32_t active_colour; // Selected widget
+  SDL_Color text_colour;
+
+  // Maintain a cache of textures for each piece of text we've rendered.
+  struct text_and_surface text_surfaces[MAX_STRINGS_RENDERED];
+  int num_strings_rendered;
 
   // Keep track of all widgets we've encountered so far.
   struct widget_state widgets[MAX_WIDGETS];
@@ -78,7 +96,7 @@ struct punk_context
   int num_layouts;
 };
 
-void fill_rect(SDL_Rect* rect, uint32_t col)
+void fill_rect(const SDL_Rect* rect, uint32_t col)
 {
   SDL_Surface* surface;
   SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &surface);
@@ -86,7 +104,7 @@ void fill_rect(SDL_Rect* rect, uint32_t col)
   SDL_UnlockTexture(g_punk_ctx->tex);
 }
 
-void clear_rect(SDL_Rect* rect)
+void clear_rect(const SDL_Rect* rect)
 {
   fill_rect(rect, g_punk_ctx->back_colour);
 }
@@ -104,8 +122,7 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   if (TTF_Init() != 0) return -1;
 
   SDL_RWops* font_data = SDL_RWFromConstMem(Hack_Regular_ttf, Hack_Regular_ttf_len);
-  g_punk_ctx->font = TTF_OpenFontRW(font_data, 0, 20);
-  SDL_RWclose(font_data);
+  g_punk_ctx->font = TTF_OpenFontRW(font_data, 0, 50);
   if (g_punk_ctx->font == NULL) return -1;
 
   // Create the texture on which the UI will be rendered.
@@ -118,6 +135,8 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
 
   SDL_SetTextureBlendMode(g_punk_ctx->tex, SDL_BLENDMODE_BLEND);
 
+  g_punk_ctx->num_strings_rendered = 0;
+
   // Make the texture fully transparent and cache the transparent colour.
   SDL_Surface* surface;
   SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &surface);
@@ -126,6 +145,11 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   g_punk_ctx->active_colour = SDL_MapRGBA(surface->format, 170, 170, 170, 255);
   SDL_FillRect(surface, NULL, g_punk_ctx->back_colour);
   SDL_UnlockTexture(g_punk_ctx->tex);
+
+  g_punk_ctx->text_colour.r = 0;
+  g_punk_ctx->text_colour.g = 0;
+  g_punk_ctx->text_colour.b = 0;
+  g_punk_ctx->text_colour.a = 255;
 
   memset(g_punk_ctx->widgets, 0, MAX_WIDGETS * sizeof(struct widget_state));
   g_punk_ctx->num_widgets = 0;
@@ -150,6 +174,12 @@ void punk_quit()
   }
 
   TTF_Quit();
+
+  for (int i = 0; i < g_punk_ctx->num_strings_rendered; i++)
+  {
+    struct text_and_surface* tt = &g_punk_ctx->text_surfaces[i];
+    SDL_FreeSurface(tt->surf);
+  }
 
   SDL_DestroyTexture(g_punk_ctx->tex);
   free(g_punk_ctx);
@@ -196,11 +226,40 @@ void punk_begin()
   }
 }
 
+struct text_and_surface* find_string_surface(const char* text)
+{
+  for (int i = 0; i < g_punk_ctx->num_strings_rendered; i++)
+  {
+    struct text_and_surface* tt = &g_punk_ctx->text_surfaces[i];
+    if (strcmp(tt->text, text) == 0)
+    {
+      return tt;
+    }
+  }
+
+  return NULL;
+}
+
+struct text_and_surface* render_and_insert_text(const char* text)
+{
+  SDL_Surface* surf = TTF_RenderText_Blended(
+    g_punk_ctx->font,
+    text,
+    g_punk_ctx->text_colour);
+
+  int index = g_punk_ctx->num_strings_rendered++;
+  struct text_and_surface* text_surface = &g_punk_ctx->text_surfaces[index];
+  text_surface->text = text;
+  text_surface->surf = surf;
+
+  return text_surface;
+}
+
 void punk_end()
 {
   // Resolve updates to the texture and render.
   // Done in two passes: clearing widgets and then drawing new widgets.
-  struct widget_state* w;
+  const struct widget_state* w;
   for (int i = 0; i < g_punk_ctx->num_widgets; i++)
   {
     w = &g_punk_ctx->widgets[i];
@@ -232,6 +291,20 @@ void punk_end()
           uint32_t col = w->needs_to_be_active
             ? g_punk_ctx->active_colour : g_punk_ctx->fore_colour;
           fill_rect(&inner_rect, col);
+
+          // Render the text.
+          struct text_and_surface* text_surface = find_string_surface(w->caption);
+          if (text_surface == NULL)
+          {
+            text_surface = render_and_insert_text(w->caption);
+          }
+
+          SDL_Surface* surface;
+          SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &surface);
+          SDL_Rect temp;
+          memcpy(&temp, &w->loc, sizeof(SDL_Rect));
+          SDL_BlitSurface(text_surface->surf, NULL, surface, &temp);
+          SDL_UnlockTexture(g_punk_ctx->tex);
           break;
         default:
           assert(0);
@@ -340,7 +413,7 @@ struct widget_state* find_widget(enum widget_type type, const SDL_Rect* loc)
   return NULL;
 }
 
-int punk_button(const char* text)
+int punk_button(const char* caption)
 {
   // Where will this button be rendered? This is inherited from the current layout position.
   assert(g_punk_ctx->num_layouts > 0);
@@ -360,6 +433,7 @@ int punk_button(const char* text)
     w->currently_active = 0;
     w->currently_rendered = 0;
     w->needs_to_be_rendered = 1;
+    strcpy(w->caption, caption);
   }
 
   // Increment the current offset in the (horizontal) layout.
