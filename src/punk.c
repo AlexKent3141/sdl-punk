@@ -1,6 +1,9 @@
 #include "punk.h"
 
+#include "font.h"
+
 #include "SDL.h"
+#include "SDL_ttf.h"
 
 #include "assert.h"
 #include "stdint.h"
@@ -52,6 +55,9 @@ struct punk_context
   // Renderer for the window we're targeting.
   SDL_Renderer* renderer;
 
+  // Font.
+  TTF_Font* font;
+
   // The texture we incrementally update as the UI changes state.
   // This is owned by punk.
   SDL_Texture* tex;
@@ -85,15 +91,24 @@ void clear_rect(SDL_Rect* rect)
   fill_rect(rect, g_punk_ctx->back_colour);
 }
 
-void punk_init(SDL_Renderer* renderer, int width, int height)
+int punk_init(SDL_Renderer* renderer, int width, int height)
 {
-  if (g_punk_ctx != NULL) return;
+  if (g_punk_ctx != NULL) return -1;
 
   g_punk_ctx = (struct punk_context*)malloc(sizeof(struct punk_context));
   g_punk_ctx->width = width;
   g_punk_ctx->height = height;
   g_punk_ctx->renderer = renderer;
 
+  // Initialise TTF and load the embedded font.
+  if (TTF_Init() != 0) return -1;
+
+  SDL_RWops* font_data = SDL_RWFromConstMem(Hack_Regular_ttf, Hack_Regular_ttf_len);
+  g_punk_ctx->font = TTF_OpenFontRW(font_data, 0, 20);
+  SDL_RWclose(font_data);
+  if (g_punk_ctx->font == NULL) return -1;
+
+  // Create the texture on which the UI will be rendered.
   g_punk_ctx->tex = SDL_CreateTexture(
     renderer,
     SDL_PIXELFORMAT_RGBA8888,
@@ -121,11 +136,20 @@ void punk_init(SDL_Renderer* renderer, int width, int height)
   // Invalidate the cached events.
   g_punk_ctx->motion.type = 0;
   g_punk_ctx->click.type = 0;
+
+  return 0;
 }
 
 void punk_quit()
 {
   if (g_punk_ctx == NULL) return;
+
+  if (g_punk_ctx->font != NULL)
+  {
+    TTF_CloseFont(g_punk_ctx->font);
+  }
+
+  TTF_Quit();
 
   SDL_DestroyTexture(g_punk_ctx->tex);
   free(g_punk_ctx);
