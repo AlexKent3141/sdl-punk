@@ -109,6 +109,33 @@ void clear_rect(const SDL_Rect* rect)
   fill_rect(rect, g_punk_ctx->back_colour);
 }
 
+void render_text(SDL_Surface* text, const SDL_Rect* rect, SDL_Surface* target)
+{
+  // Calculate the target rect.
+  // We aim to fill the middle third of the target.
+  SDL_Rect temp;
+
+  // Initially assume we're going to be limited by height.
+  temp.y = rect->y + 0.1f * rect->h;
+  temp.h = 0.8f * rect->h;
+
+  // What width do we need based on the ratio?
+  temp.w = temp.h * (float)(text->w) / text->h;
+  temp.x = (rect->x + 0.5f * (rect->w - temp.w));
+
+  if (temp.w > rect->w)
+  {
+    temp.x = rect->x + 0.1f * rect->w;
+    temp.w = 0.8f * rect->w;
+
+    // What height do we need based on the ratio?
+    temp.h = temp.w * (float)(text->h) / text->w;
+    temp.y = (rect->y + 0.5f * (rect->h - temp.h));
+  }
+
+  SDL_BlitScaled(text, NULL, target, &temp);
+}
+
 int punk_init(SDL_Renderer* renderer, int width, int height)
 {
   if (g_punk_ctx != NULL) return -1;
@@ -122,7 +149,7 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   if (TTF_Init() != 0) return -1;
 
   SDL_RWops* font_data = SDL_RWFromConstMem(Hack_Regular_ttf, Hack_Regular_ttf_len);
-  g_punk_ctx->font = TTF_OpenFontRW(font_data, 0, 50);
+  g_punk_ctx->font = TTF_OpenFontRW(font_data, 0, 100);
   if (g_punk_ctx->font == NULL) return -1;
 
   // Create the texture on which the UI will be rendered.
@@ -301,9 +328,7 @@ void punk_end()
 
           SDL_Surface* surface;
           SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &surface);
-          SDL_Rect temp;
-          memcpy(&temp, &w->loc, sizeof(SDL_Rect));
-          SDL_BlitSurface(text_surface->surf, NULL, surface, &temp);
+          render_text(text_surface->surf, &w->loc, surface);
           SDL_UnlockTexture(g_punk_ctx->tex);
           break;
         default:
