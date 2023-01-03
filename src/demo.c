@@ -60,6 +60,13 @@ int main()
 
     punk_begin_horizontal_layout(4, PUNK_FILL, PUNK_FILL);
 
+    punk_begin_vertical_layout(2, PUNK_FILL, PUNK_FILL);
+
+    punk_label("It's over");
+    punk_label("9000!");
+
+    punk_end_layout(); // Vertical layout
+
     if (punk_button("hello")) printf("Hello world!\n");
 
     if (key_button_visible)

@@ -35,5 +35,6 @@ DLLEXPORT void punk_begin_vertical_layout(int n, int width, int height);
 DLLEXPORT void punk_end_layout();
 
 DLLEXPORT int punk_button(const char* text);
+DLLEXPORT void punk_label(const char* text);
 
 #endif // __PUNK_H_INCLUDED__

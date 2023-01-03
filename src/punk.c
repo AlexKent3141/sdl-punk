@@ -25,7 +25,8 @@ enum layout_type
 
 enum widget_type
 {
-  BUTTON
+  BUTTON,
+  LABEL
 };
 
 struct widget_state
@@ -111,8 +112,11 @@ void clear_rect(const SDL_Rect* rect)
   fill_rect(rect, g_punk_ctx->back_colour);
 }
 
-void render_text(SDL_Surface* text, const SDL_Rect* rect, SDL_Surface* target)
+void render_text(SDL_Surface* text, const SDL_Rect* rect)
 {
+  SDL_Surface* target;
+  SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &target);
+
   // Calculate the target rect.
   // We aim to fill the middle third of the target.
   SDL_Rect temp;
@@ -136,6 +140,8 @@ void render_text(SDL_Surface* text, const SDL_Rect* rect, SDL_Surface* target)
   }
 
   SDL_BlitScaled(text, NULL, target, &temp);
+
+  SDL_UnlockTexture(g_punk_ctx->tex);
 }
 
 int punk_init(SDL_Renderer* renderer, int width, int height)
@@ -316,6 +322,7 @@ void punk_end()
       switch (w->type)
       {
         case BUTTON:
+        {
           fill_rect(&w->loc, g_punk_ctx->back_colour);
           uint32_t col = w->needs_to_be_active
             ? g_punk_ctx->active_colour : g_punk_ctx->fore_colour;
@@ -328,11 +335,21 @@ void punk_end()
             text_surface = render_and_insert_text(w->caption);
           }
 
-          SDL_Surface* surface;
-          SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &surface);
-          render_text(text_surface->surf, &w->loc, surface);
-          SDL_UnlockTexture(g_punk_ctx->tex);
+          render_text(text_surface->surf, &w->loc);
           break;
+        }
+        case LABEL:
+        {
+          // Render the text.
+          struct text_and_surface* text_surface = find_string_surface(w->caption);
+          if (text_surface == NULL)
+          {
+            text_surface = render_and_insert_text(w->caption);
+          }
+
+          render_text(text_surface->surf, &w->loc);
+          break;
+        }
         default:
           assert(0);
           break;
@@ -424,6 +441,22 @@ void punk_begin_vertical_layout(int n, int width, int height)
 void punk_end_layout()
 {
   --g_punk_ctx->num_layouts;
+
+  if (g_punk_ctx->num_layouts == 0) return;
+
+  struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
+  switch (layout->type)
+  {
+    case HORIZONTAL:
+      layout->current_child.x += layout->current_child.w;
+      break;
+    case VERTICAL:
+      layout->current_child.y += layout->current_child.h;
+      break;
+    default:
+      assert(0);
+      break;
+  }
 }
 
 struct widget_state* find_widget(enum widget_type type, const SDL_Rect* loc)
@@ -486,4 +519,42 @@ int punk_button(const char* caption)
   if (click->type == 0) return 0;
 
   return hit_test(&w->loc, click->x, click->y);
+}
+
+void punk_label(const char* caption)
+{
+  // Where will this button be rendered? This is inherited from the current layout position.
+  assert(g_punk_ctx->num_layouts > 0);
+  struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
+
+  // Check whether we've already got this widget cached.
+  struct widget_state* w = find_widget(LABEL, &layout->current_child);
+  if (w)
+  {
+    w->needs_to_be_rendered = 1;
+  }
+  else
+  {
+    w = &g_punk_ctx->widgets[g_punk_ctx->num_widgets++];
+    w->type = LABEL;
+    memcpy(&w->loc, &layout->current_child, sizeof(SDL_Rect));
+    w->currently_active = 0;
+    w->currently_rendered = 0;
+    w->needs_to_be_rendered = 1;
+    strcpy(w->caption, caption);
+  }
+
+  // Increment the current offset in the (horizontal) layout.
+  switch (layout->type)
+  {
+    case HORIZONTAL:
+      layout->current_child.x += layout->current_child.w;
+      break;
+    case VERTICAL:
+      layout->current_child.y += layout->current_child.h;
+      break;
+    default:
+      assert(0);
+      break;
+  }
 }
