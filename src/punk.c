@@ -15,6 +15,8 @@
 #define MAX_STRINGS_RENDERED 100
 #define MAX_CAPTION_LENGTH 50
 
+struct punk_context* g_punk_ctx = NULL;
+
 enum layout_type
 {
   HORIZONTAL,

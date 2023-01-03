@@ -17,7 +17,7 @@ struct SDL_Renderer;
 union SDL_Event;
 
 struct punk_context;
-extern struct punk_context* g_punk_ctx = NULL;
+extern struct punk_context* g_punk_ctx;
 
 DLLEXPORT int punk_init(struct SDL_Renderer*, int, int);
 DLLEXPORT void punk_quit();
