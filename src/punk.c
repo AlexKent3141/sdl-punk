@@ -438,13 +438,8 @@ void punk_begin_vertical_layout(int n, int width, int height)
   ++g_punk_ctx->num_layouts;
 }
 
-void punk_end_layout()
+void layout_step(struct layout_state* layout)
 {
-  --g_punk_ctx->num_layouts;
-
-  if (g_punk_ctx->num_layouts == 0) return;
-
-  struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
   switch (layout->type)
   {
     case HORIZONTAL:
@@ -457,6 +452,16 @@ void punk_end_layout()
       assert(0);
       break;
   }
+}
+
+void punk_end_layout()
+{
+  --g_punk_ctx->num_layouts;
+
+  if (g_punk_ctx->num_layouts == 0) return;
+
+  struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
+  layout_step(layout);
 }
 
 struct widget_state* find_widget(enum widget_type type, const SDL_Rect* loc)
@@ -496,19 +501,7 @@ int punk_button(const char* caption)
     strcpy(w->caption, caption);
   }
 
-  // Increment the current offset in the (horizontal) layout.
-  switch (layout->type)
-  {
-    case HORIZONTAL:
-      layout->current_child.x += layout->current_child.w;
-      break;
-    case VERTICAL:
-      layout->current_child.y += layout->current_child.h;
-      break;
-    default:
-      assert(0);
-      break;
-  }
+  layout_step(layout);
 
   // Check the next active state of the widget.
   SDL_MouseMotionEvent* motion = &g_punk_ctx->motion;
@@ -544,17 +537,5 @@ void punk_label(const char* caption)
     strcpy(w->caption, caption);
   }
 
-  // Increment the current offset in the (horizontal) layout.
-  switch (layout->type)
-  {
-    case HORIZONTAL:
-      layout->current_child.x += layout->current_child.w;
-      break;
-    case VERTICAL:
-      layout->current_child.y += layout->current_child.h;
-      break;
-    default:
-      assert(0);
-      break;
-  }
+  layout_step(layout);
 }
