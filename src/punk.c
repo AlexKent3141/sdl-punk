@@ -14,6 +14,7 @@
 #define WIDGET_BORDER 1
 #define MAX_STRINGS_RENDERED 100
 #define MAX_CAPTION_LENGTH 50
+#define TEXT_SIZE_PIXELS 20
 
 struct punk_context* g_punk_ctx = NULL;
 
@@ -118,28 +119,14 @@ void render_text(SDL_Surface* text, const SDL_Rect* rect)
   SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &target);
 
   // Calculate the target rect.
-  // We aim to fill the middle third of the target.
+  // Note: we've created the text with the right size - just need to position it.
   SDL_Rect temp;
+  temp.h = text->h;
+  temp.w = text->w;
+  temp.x = rect->x + 0.5f * (rect->w - temp.w);
+  temp.y = rect->y + 0.5f * (rect->h - temp.h);
 
-  // Initially assume we're going to be limited by height.
-  temp.y = rect->y + 0.1f * rect->h;
-  temp.h = 0.8f * rect->h;
-
-  // What width do we need based on the ratio?
-  temp.w = temp.h * (float)(text->w) / text->h;
-  temp.x = (rect->x + 0.5f * (rect->w - temp.w));
-
-  if (temp.w > rect->w)
-  {
-    temp.x = rect->x + 0.1f * rect->w;
-    temp.w = 0.8f * rect->w;
-
-    // What height do we need based on the ratio?
-    temp.h = temp.w * (float)(text->h) / text->w;
-    temp.y = (rect->y + 0.5f * (rect->h - temp.h));
-  }
-
-  SDL_BlitScaled(text, NULL, target, &temp);
+  SDL_BlitSurface(text, NULL, target, &temp);
 
   SDL_UnlockTexture(g_punk_ctx->tex);
 }
@@ -157,7 +144,7 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   if (TTF_Init() != 0) return -1;
 
   SDL_RWops* font_data = SDL_RWFromConstMem(Hack_Regular_ttf, Hack_Regular_ttf_len);
-  g_punk_ctx->font = TTF_OpenFontRW(font_data, 0, 100);
+  g_punk_ctx->font = TTF_OpenFontRW(font_data, 0, TEXT_SIZE_PIXELS);
   if (g_punk_ctx->font == NULL) return -1;
 
   // Create the texture on which the UI will be rendered.
