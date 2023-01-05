@@ -33,6 +33,7 @@ int main()
   punk_init(renderer, WIDTH, HEIGHT);
 
   int key_button_visible = 0;
+  int checked = 0;
 
   SDL_bool stop = SDL_FALSE;
   SDL_Event event;
@@ -60,8 +61,9 @@ int main()
 
     punk_begin_horizontal_layout(4, PUNK_FILL, PUNK_FILL);
 
-    punk_begin_vertical_layout(2, PUNK_FILL, PUNK_FILL);
+    punk_begin_vertical_layout(3, PUNK_FILL, PUNK_FILL);
 
+    punk_checkbox("Checkmate", &checked);
     punk_label("It's over");
     punk_label("9000!");
 
@@ -74,13 +76,16 @@ int main()
       if (punk_button("maybe")) printf("Maybe!\n");
     }
 
-    punk_begin_vertical_layout(3, PUNK_FILL, PUNK_FILL);
+    if (checked)
+    {
+      punk_begin_vertical_layout(3, PUNK_FILL, PUNK_FILL);
 
-    if (punk_button("V1")) printf("V1!\n");
-    if (punk_button("V2")) printf("V2!\n");
-    if (punk_button("V3")) printf("Punk!\n");
+      if (punk_button("V1")) printf("V1!\n");
+      if (punk_button("V2")) printf("V2!\n");
+      if (punk_button("V3")) printf("Punk!\n");
 
-    punk_end_layout(); // Vertical layout
+      punk_end_layout(); // Vertical layout
+    }
 
     punk_end_layout(); // Horizontal layout
 

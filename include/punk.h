@@ -36,5 +36,6 @@ DLLEXPORT void punk_end_layout();
 
 DLLEXPORT int punk_button(const char* text);
 DLLEXPORT void punk_label(const char* text);
+DLLEXPORT void punk_checkbox(const char* text, int* checked);
 
 #endif // __PUNK_H_INCLUDED__
