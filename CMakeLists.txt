@@ -16,7 +16,11 @@ CPMAddPackage(
 
 add_library(punk SHARED
   include/punk.h
+  src/punk_internal.h
   src/punk.c
+  src/button.c
+  src/label.c
+  src/checkbox.c
   src/font.h)
 
 target_include_directories(punk

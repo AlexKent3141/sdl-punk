@@ -1,20 +1,11 @@
 #include "punk.h"
+#include "punk_internal.h"
 
 #include "font.h"
-
-#include "SDL.h"
-#include "SDL_ttf.h"
 
 #include "assert.h"
 #include "stdint.h"
 #include "stdlib.h"
-
-#define MAX_WIDGETS 100
-#define MAX_NESTED_LAYOUTS 10
-#define WIDGET_BORDER 1
-#define MAX_STRINGS_RENDERED 100
-#define MAX_CAPTION_LENGTH 50
-#define TEXT_SIZE_PIXELS 20
 
 struct punk_context* g_punk_ctx = NULL;
 
@@ -22,99 +13,6 @@ enum layout_type
 {
   HORIZONTAL,
   VERTICAL
-};
-
-enum widget_type
-{
-  BUTTON,
-  LABEL,
-  CHECKBOX
-};
-
-struct button_state
-{
-  char caption[MAX_CAPTION_LENGTH];
-};
-
-struct label_state
-{
-  char caption[MAX_CAPTION_LENGTH];
-};
-
-struct checkbox_state
-{
-  char caption[MAX_CAPTION_LENGTH];
-  SDL_Rect text_area;
-  SDL_Rect box_area;
-  int checked;
-};
-
-struct widget_state
-{
-  // These fields are used to uniquely identify the widget between render passes.
-  enum widget_type type;
-  SDL_Rect loc;
-
-  // Flags used to check whether we need to render now.
-  int currently_active;
-  int needs_to_be_active;
-  int currently_rendered;
-  int needs_to_be_rendered;
-
-  // Widget specific data.
-  void* state;
-};
-
-struct layout_state
-{
-  enum layout_type type;
-  SDL_Rect current_child;
-  int width;
-  int height;
-  int num_items;
-};
-
-struct text_and_surface
-{
-  const char* text;
-  SDL_Surface* surf;
-};
-
-struct punk_context
-{
-  // Window dimensions.
-  int width;
-  int height;
-
-  // Renderer for the window we're targeting.
-  SDL_Renderer* renderer;
-
-  // Font.
-  TTF_Font* font;
-
-  // The texture we incrementally update as the UI changes state.
-  // This is owned by punk.
-  SDL_Texture* tex;
-  uint32_t back_colour;
-  uint32_t fore_colour;
-  uint32_t active_colour; // Selected widget
-  SDL_Color text_colour;
-
-  // Maintain a cache of textures for each piece of text we've rendered.
-  struct text_and_surface text_surfaces[MAX_STRINGS_RENDERED];
-  int num_strings_rendered;
-
-  // Keep track of all widgets we've encountered so far.
-  struct widget_state widgets[MAX_WIDGETS];
-  int num_widgets;
-
-  // Event status.
-  SDL_MouseMotionEvent motion;
-  SDL_MouseButtonEvent click;
-
-  // Keep track of where we are in each nested layout.
-  struct layout_state layouts[MAX_NESTED_LAYOUTS];
-  int num_layouts;
 };
 
 void fill_rect(const SDL_Rect* rect, uint32_t col)
@@ -218,7 +116,7 @@ void punk_quit()
   for (int i = 0; i < g_punk_ctx->num_widgets; i++)
   {
     struct widget_state* w = &g_punk_ctx->widgets[i];
-    free(w->state);
+    free(w->state.data);
   }
 
   // Clean up cached text surfaces.
@@ -335,85 +233,7 @@ void punk_end()
     if (becomes_visible || (w->needs_to_be_rendered && active_changed))
     {
       // Draw the widget on the texture.
-      SDL_Rect inner_rect;
-      get_inner_rect(&w->loc, &inner_rect, WIDGET_BORDER);
-      switch (w->type)
-      {
-        case BUTTON:
-        {
-          struct button_state* state = (struct button_state*)w->state;
-
-          fill_rect(&w->loc, g_punk_ctx->back_colour);
-          uint32_t col = w->needs_to_be_active
-            ? g_punk_ctx->active_colour : g_punk_ctx->fore_colour;
-          fill_rect(&inner_rect, col);
-
-          // Render the text.
-          struct text_and_surface* text_surface =
-            find_string_surface(state->caption);
-          if (text_surface == NULL)
-          {
-            text_surface = render_and_insert_text(state->caption);
-          }
-
-          render_text(text_surface->surf, &w->loc);
-          break;
-        }
-        case LABEL:
-        {
-          struct label_state* state = (struct label_state*)w->state;
-
-          // Render the text.
-          struct text_and_surface* text_surface =
-            find_string_surface(state->caption);
-          if (text_surface == NULL)
-          {
-            text_surface = render_and_insert_text(state->caption);
-          }
-
-          render_text(text_surface->surf, &w->loc);
-          break;
-        }
-        case CHECKBOX:
-        {
-          struct checkbox_state* state = (struct checkbox_state*)w->state;
-
-          // Render the text.
-          struct text_and_surface* text_surface =
-            find_string_surface(state->caption);
-          if (text_surface == NULL)
-          {
-            text_surface = render_and_insert_text(state->caption);
-          }
-
-          render_text(text_surface->surf, &state->text_area);
-
-          // The check box needs to have a border and some indication of
-          // when it's focused.
-          fill_rect(&state->box_area, g_punk_ctx->fore_colour);
-
-          if (w->needs_to_be_active)
-          {
-            SDL_Rect active_rect;
-            get_inner_rect(&state->box_area, &active_rect, WIDGET_BORDER);
-
-            fill_rect(&active_rect, g_punk_ctx->active_colour);
-          }
-
-          if (state->checked)
-          {
-            SDL_Rect checked_rect;
-            get_inner_rect(&state->box_area, &checked_rect, 3*WIDGET_BORDER);
-
-            fill_rect(&checked_rect, 0x000000FF);//g_punk_ctx->text_colour);
-          }
-
-          break;
-        }
-        default:
-          assert(0);
-          break;
-      }
+      w->draw(w);
     }
   }
 
@@ -536,127 +356,4 @@ struct widget_state* find_widget(enum widget_type type, const SDL_Rect* loc)
   }
 
   return NULL;
-}
-
-int punk_button(const char* caption)
-{
-  assert(g_punk_ctx->num_layouts > 0);
-  struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
-
-  // Check whether we've already got this widget cached.
-  struct widget_state* w = find_widget(BUTTON, &layout->current_child);
-  if (w)
-  {
-    w->needs_to_be_rendered = 1;
-  }
-  else
-  {
-    w = &g_punk_ctx->widgets[g_punk_ctx->num_widgets++];
-    w->type = BUTTON;
-    memcpy(&w->loc, &layout->current_child, sizeof(SDL_Rect));
-    w->currently_active = 0;
-    w->currently_rendered = 0;
-    w->needs_to_be_rendered = 1;
-
-    struct button_state* state =
-      (struct button_state*)malloc(sizeof(struct button_state));
-    strcpy(state->caption, caption);
-    w->state = state;
-  }
-
-  layout_step(layout);
-
-  // Check the next active state of the widget.
-  SDL_MouseMotionEvent* motion = &g_punk_ctx->motion;
-  w->needs_to_be_active = motion->type != 0 && hit_test(&w->loc, motion->x, motion->y);
-
-  // Check whether the button has been clicked.
-  SDL_MouseButtonEvent* click = &g_punk_ctx->click;
-  if (click->type == 0) return 0;
-
-  return hit_test(&w->loc, click->x, click->y);
-}
-
-void punk_label(const char* caption)
-{
-  assert(g_punk_ctx->num_layouts > 0);
-  struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
-
-  // Check whether we've already got this widget cached.
-  struct widget_state* w = find_widget(LABEL, &layout->current_child);
-  if (w)
-  {
-    w->needs_to_be_rendered = 1;
-  }
-  else
-  {
-    w = &g_punk_ctx->widgets[g_punk_ctx->num_widgets++];
-    w->type = LABEL;
-    memcpy(&w->loc, &layout->current_child, sizeof(SDL_Rect));
-    w->currently_active = 0;
-    w->currently_rendered = 0;
-    w->needs_to_be_rendered = 1;
-
-    struct button_state* state =
-      (struct button_state*)malloc(sizeof(struct button_state));
-    strcpy(state->caption, caption);
-    w->state = state;
-  }
-
-  layout_step(layout);
-}
-
-void punk_checkbox(const char* caption, int* checked)
-{
-  assert(g_punk_ctx->num_layouts > 0);
-  assert(checked != NULL);
-  struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
-
-  // Check whether we've already got this widget cached.
-  struct widget_state* w = find_widget(CHECKBOX, &layout->current_child);
-  if (w)
-  {
-    w->needs_to_be_rendered = 1;
-  }
-  else
-  {
-    w = &g_punk_ctx->widgets[g_punk_ctx->num_widgets++];
-    w->type = CHECKBOX;
-    memcpy(&w->loc, &layout->current_child, sizeof(SDL_Rect));
-    w->currently_active = 0;
-    w->currently_rendered = 0;
-    w->needs_to_be_rendered = 1;
-
-    struct checkbox_state* state =
-      (struct checkbox_state*)malloc(sizeof(struct checkbox_state));
-    strcpy(state->caption, caption);
-    memcpy(&state->text_area, &layout->current_child, sizeof(SDL_Rect));
-    state->text_area.w -= TEXT_SIZE_PIXELS;
-    memcpy(&state->box_area, &layout->current_child, sizeof(SDL_Rect));
-    state->box_area.w = TEXT_SIZE_PIXELS;
-    state->box_area.x += state->text_area.w;
-    state->box_area.h = TEXT_SIZE_PIXELS;
-    state->box_area.y = 0.5 * (state->text_area.h - TEXT_SIZE_PIXELS);
-    w->state = state;
-  }
-
-  layout_step(layout);
-  struct checkbox_state* state = (struct checkbox_state*)w->state;
-  state->checked = *checked;
-
-  // Check the next active state of the widget.
-  SDL_MouseMotionEvent* motion = &g_punk_ctx->motion;
-  w->needs_to_be_active =
-    motion->type != 0 && hit_test(&state->box_area, motion->x, motion->y);
-
-  // Check whether the button has been clicked.
-  SDL_MouseButtonEvent* click = &g_punk_ctx->click;
-  if (click->type == 0) return;
-
-  if (hit_test(&state->box_area, click->x, click->y))
-  {
-    *checked = !*checked;
-    state->checked = *checked;
-    w->currently_active = 0;
-  }
 }
