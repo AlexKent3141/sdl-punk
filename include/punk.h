@@ -34,7 +34,14 @@ DLLEXPORT void punk_begin_horizontal_layout(int n, int width, int height);
 DLLEXPORT void punk_begin_vertical_layout(int n, int width, int height);
 DLLEXPORT void punk_end_layout();
 
-DLLEXPORT int punk_button(const char* text);
+enum punk_click_type
+{
+  PUNK_CLICK_NONE,
+  PUNK_CLICK_LEFT,
+  PUNK_CLICK_RIGHT
+};
+
+DLLEXPORT enum punk_click_type punk_button(const char* text);
 DLLEXPORT void punk_label(const char* text);
 DLLEXPORT void punk_checkbox(const char* text, int* checked);
 

@@ -25,7 +25,7 @@ void draw_button(const struct widget_state* w)
   render_text(text_surface, &w->loc);
 }
 
-int punk_button(const char* caption)
+enum punk_click_type punk_button(const char* caption)
 {
   assert(g_punk_ctx->num_layouts > 0);
   struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
@@ -62,5 +62,18 @@ int punk_button(const char* caption)
   SDL_MouseButtonEvent* click = &g_punk_ctx->click;
   if (click->type == 0) return 0;
 
-  return hit_test(&w->loc, click->x, click->y);
+  if (hit_test(&w->loc, click->x, click->y))
+  {
+    switch (click->button)
+    {
+      case SDL_BUTTON_LEFT:
+        return PUNK_CLICK_LEFT;
+      case SDL_BUTTON_RIGHT:
+        return PUNK_CLICK_RIGHT;
+      default:
+        return PUNK_CLICK_NONE;
+    }
+  }
+
+  return PUNK_CLICK_NONE;
 }

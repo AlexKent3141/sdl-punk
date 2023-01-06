@@ -138,10 +138,7 @@ void punk_handle_event(SDL_Event* e)
   {
     case SDL_MOUSEBUTTONDOWN:
     {
-      if (e->button.button == SDL_BUTTON_LEFT)
-      {
-        memcpy(&g_punk_ctx->click, &e->button, sizeof(SDL_MouseButtonEvent));
-      }
+      memcpy(&g_punk_ctx->click, &e->button, sizeof(SDL_MouseButtonEvent));
       break;
     }
     case SDL_MOUSEMOTION:

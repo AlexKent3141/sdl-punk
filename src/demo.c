@@ -80,7 +80,7 @@ int main()
     {
       punk_begin_vertical_layout(3, PUNK_FILL, PUNK_FILL);
 
-      if (punk_button("V1")) printf("V1!\n");
+      if (punk_button("V1") == PUNK_CLICK_RIGHT) printf("V1!\n");
       if (punk_button("V2")) printf("V2!\n");
       if (punk_button("V3")) printf("Punk!\n");
 

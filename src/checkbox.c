@@ -88,7 +88,7 @@ void punk_checkbox(const char* caption, int* checked)
 
   // Check whether the button has been clicked.
   SDL_MouseButtonEvent* click = &g_punk_ctx->click;
-  if (click->type == 0) return;
+  if (click->type == 0 || click->button != SDL_BUTTON_LEFT) return;
 
   if (hit_test(&state->box_area, click->x, click->y))
   {
