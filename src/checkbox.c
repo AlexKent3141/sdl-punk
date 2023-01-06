@@ -18,14 +18,8 @@ void draw_checkbox(const struct widget_state* w)
   struct checkbox_state* state = w->state.checkbox;
 
   // Render the text.
-  struct text_and_surface* text_surface =
-    find_string_surface(state->caption);
-  if (text_surface == NULL)
-  {
-    text_surface = render_and_insert_text(state->caption);
-  }
-
-  render_text(text_surface->surf, &state->text_area);
+  SDL_Surface* text_surface = get_text_surface(state->caption);
+  render_text(text_surface, &state->text_area);
 
   // The check box needs to have a border and some indication of
   // when it's focused.

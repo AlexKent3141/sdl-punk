@@ -103,8 +103,7 @@ void clear_rect(const SDL_Rect*);
 void render_text(SDL_Surface*, const SDL_Rect*);
 void get_inner_rect(const SDL_Rect*, SDL_Rect*, int);
 
-struct text_and_surface* find_string_surface(const char*);
-struct text_and_surface* render_and_insert_text(const char*);
+SDL_Surface* get_text_surface(const char*);
 
 int hit_test(const SDL_Rect*, int32_t, int32_t);
 

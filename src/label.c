@@ -13,14 +13,8 @@ void draw_label(const struct widget_state* w)
   struct label_state* state = w->state.label;
 
   // Render the text.
-  struct text_and_surface* text_surface =
-    find_string_surface(state->caption);
-  if (text_surface == NULL)
-  {
-    text_surface = render_and_insert_text(state->caption);
-  }
-
-  render_text(text_surface->surf, &w->loc);
+  SDL_Surface* text_surface = get_text_surface(state->caption);
+  render_text(text_surface, &w->loc);
 }
 
 void punk_label(const char* caption)

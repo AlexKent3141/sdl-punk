@@ -172,22 +172,18 @@ void punk_begin()
   }
 }
 
-struct text_and_surface* find_string_surface(const char* text)
+SDL_Surface* get_text_surface(const char* text)
 {
+  // Check the cache.
   for (int i = 0; i < g_punk_ctx->num_strings_rendered; i++)
   {
     struct text_and_surface* tt = &g_punk_ctx->text_surfaces[i];
     if (strcmp(tt->text, text) == 0)
     {
-      return tt;
+      return tt->surf;
     }
   }
 
-  return NULL;
-}
-
-struct text_and_surface* render_and_insert_text(const char* text)
-{
   SDL_Surface* surf = TTF_RenderText_Blended(
     g_punk_ctx->font,
     text,
@@ -198,7 +194,7 @@ struct text_and_surface* render_and_insert_text(const char* text)
   text_surface->text = text;
   text_surface->surf = surf;
 
-  return text_surface;
+  return surf;
 }
 
 void get_inner_rect(const SDL_Rect* initial, SDL_Rect* inner, int border)
