@@ -6,6 +6,7 @@
 #include "assert.h"
 #include "stdint.h"
 #include "stdlib.h"
+#include "string.h"
 
 struct punk_context* g_punk_ctx = NULL;
 
@@ -239,14 +240,50 @@ void punk_render()
   SDL_RenderCopy(g_punk_ctx->renderer, g_punk_ctx->tex, NULL, NULL);
 }
 
-void punk_begin_horizontal_layout(int n, int width, int height)
+void calculate_sizes(const char* split, struct layout_state* layout, int max_size)
 {
+  // Parse the split string to calculate child widths.
+  static char tokens[MAX_WIDGETS_PER_LAYOUT][10];
+  static char split_mutable[255];
+  int exact_pixels_used = 0;
+  int ratio_units_used = 0;
+  strcpy(split_mutable, split);
+  char* token = strtok(split_mutable, ":");
+  while (token != NULL)
+  {
+    strcpy(tokens[layout->num_widgets], token);
+    if (token[0] == 'e') exact_pixels_used += atoi(&token[1]);
+    else ratio_units_used += atoi(token);
+    ++layout->num_widgets;
+    token = strtok(NULL, ":");
+  }
+
+  int ratio_unit_size = 0;
+  if (ratio_units_used > 0)
+  {
+    ratio_unit_size = (max_size - exact_pixels_used) / ratio_units_used;
+  }
+
+  for (int i = 0; i < layout->num_widgets; i++)
+  {
+    if (tokens[i][0] == 'e')
+      layout->widget_sizes[i] = atoi(&tokens[i][1]);
+    else
+      layout->widget_sizes[i] = atoi(tokens[i]) * ratio_unit_size;
+  }
+}
+
+void punk_begin_horizontal_layout(const char* split, int width, int height)
+{
+  assert(split != NULL);
+  assert(strlen(split) > 0);
+
   int layout_index = g_punk_ctx->num_layouts;
 
   struct layout_state* layout = &g_punk_ctx->layouts[layout_index];
 
   layout->type = HORIZONTAL;
-  layout->num_items = n;
+  layout->current_child_index = 0;
 
   // The current offset for this layout is inherited from the outer layout.
   if (layout_index > 0)
@@ -257,7 +294,6 @@ void punk_begin_horizontal_layout(int n, int width, int height)
 
     layout->current_child.x = prev_layout->current_child.x;
     layout->current_child.y = prev_layout->current_child.y;
-    layout->current_child.w = layout->width / n;
     layout->current_child.h = layout->height;
   }
   else
@@ -268,21 +304,26 @@ void punk_begin_horizontal_layout(int n, int width, int height)
 
     layout->current_child.x = 0;
     layout->current_child.y = 0;
-    layout->current_child.w = layout->width / n;
     layout->current_child.h = layout->height;
   }
+
+  layout->num_widgets = 0;
+
+  calculate_sizes(split, layout, layout->width);
+
+  layout->current_child.w = layout->widget_sizes[0];
 
   ++g_punk_ctx->num_layouts;
 }
 
-void punk_begin_vertical_layout(int n, int width, int height)
+void punk_begin_vertical_layout(const char* split, int width, int height)
 {
   int layout_index = g_punk_ctx->num_layouts;
 
   struct layout_state* layout = &g_punk_ctx->layouts[layout_index];
 
   layout->type = VERTICAL;
-  layout->num_items = n;
+  layout->current_child_index = 0;
 
   // The current offset for this layout is inherited from the outer layout.
   if (layout_index > 0)
@@ -294,7 +335,6 @@ void punk_begin_vertical_layout(int n, int width, int height)
     layout->current_child.x = prev_layout->current_child.x;
     layout->current_child.y = prev_layout->current_child.y;
     layout->current_child.w = layout->width;
-    layout->current_child.h = layout->height / n;
   }
   else
   {
@@ -305,8 +345,13 @@ void punk_begin_vertical_layout(int n, int width, int height)
     layout->current_child.x = 0;
     layout->current_child.y = 0;
     layout->current_child.w = layout->width;
-    layout->current_child.h = layout->height / n;
   }
+
+  layout->num_widgets = 0;
+
+  calculate_sizes(split, layout, layout->height);
+
+  layout->current_child.h = layout->widget_sizes[0];
 
   ++g_punk_ctx->num_layouts;
 }
@@ -316,10 +361,12 @@ void layout_step(struct layout_state* layout)
   switch (layout->type)
   {
     case HORIZONTAL:
-      layout->current_child.x += layout->current_child.w;
+      layout->current_child.x += layout->widget_sizes[layout->current_child_index++];
+      layout->current_child.w = layout->widget_sizes[layout->current_child_index];
       break;
     case VERTICAL:
-      layout->current_child.y += layout->current_child.h;
+      layout->current_child.y += layout->widget_sizes[layout->current_child_index++];
+      layout->current_child.h = layout->widget_sizes[layout->current_child_index];
       break;
     default:
       assert(0);

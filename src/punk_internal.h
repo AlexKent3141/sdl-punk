@@ -5,6 +5,7 @@
 #include "SDL_ttf.h"
 
 #define MAX_WIDGETS 100
+#define MAX_WIDGETS_PER_LAYOUT 20
 #define MAX_NESTED_LAYOUTS 10
 #define WIDGET_BORDER 1
 #define MAX_STRINGS_RENDERED 100
@@ -49,10 +50,12 @@ struct widget_state
 struct layout_state
 {
   enum layout_type type;
+  int current_child_index;
   SDL_Rect current_child;
   int width;
   int height;
-  int num_items;
+  int widget_sizes[MAX_WIDGETS_PER_LAYOUT];
+  int num_widgets;
 };
 
 struct text_and_surface

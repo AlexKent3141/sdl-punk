@@ -30,8 +30,18 @@ DLLEXPORT void punk_end();
 
 DLLEXPORT void punk_render();
 
-DLLEXPORT void punk_begin_horizontal_layout(int n, int width, int height);
-DLLEXPORT void punk_begin_vertical_layout(int n, int width, int height);
+/*
+ Layout definitions contain a `split` string which indicates how the layout area is
+ divided between the contained widgets.
+ Elements in the split string can have a couple of different forms. The split
+ might be entirely ratio-based e.g. "1:2:1" indicates a layout containing 3 widgets
+ with the middle one being twice as large as the outer two. Alternatively, some
+ of the widgets could have fixed sizes e.g. "1:1:1:e50" indicates a layout containing
+ 4 widgets where the last one is exactly 50 pixels in size and the first 3 are all
+ the same size (filling the area of the layout).
+*/
+DLLEXPORT void punk_begin_horizontal_layout(const char* split, int width, int height);
+DLLEXPORT void punk_begin_vertical_layout(const char* split, int width, int height);
 DLLEXPORT void punk_end_layout();
 
 enum punk_click_type

@@ -59,9 +59,9 @@ int main()
     // Define the GUI here.
     punk_begin();
 
-    punk_begin_horizontal_layout(4, PUNK_FILL, PUNK_FILL);
+    punk_begin_horizontal_layout("1:1:1:1", PUNK_FILL, PUNK_FILL);
 
-    punk_begin_vertical_layout(3, PUNK_FILL, PUNK_FILL);
+    punk_begin_vertical_layout("e20:1:1", PUNK_FILL, PUNK_FILL);
 
     punk_checkbox("Checkmate", &checked);
     punk_label("It's over");
@@ -78,7 +78,7 @@ int main()
 
     if (checked)
     {
-      punk_begin_vertical_layout(3, PUNK_FILL, PUNK_FILL);
+      punk_begin_vertical_layout("1:2:1", PUNK_FILL, PUNK_FILL);
 
       if (punk_button("V1") == PUNK_CLICK_RIGHT) printf("V1!\n");
       if (punk_button("V2")) printf("V2!\n");
