@@ -48,6 +48,21 @@ DLLEXPORT void punk_end_layout();
 // every slot with a widget.
 DLLEXPORT void punk_skip_layout_widget();
 
+/*
+ Style can be customised on a per-widget basis.
+ It's recommended that you use the below function to get the default style and
+ then modify this and pass it into your widget function calls.
+ If the style argument to a widget call is NULL then the default style is used.
+*/
+
+struct punk_style
+{
+  int font_size;
+};
+
+DLLEXPORT void punk_default_style(struct punk_style*);
+
+// Functions to display widgets.
 enum punk_click_type
 {
   PUNK_CLICK_NONE,
@@ -55,8 +70,8 @@ enum punk_click_type
   PUNK_CLICK_RIGHT
 };
 
-DLLEXPORT enum punk_click_type punk_button(const char* text);
-DLLEXPORT void punk_label(const char* text);
-DLLEXPORT void punk_checkbox(const char* text, int* checked);
+DLLEXPORT enum punk_click_type punk_button(const char* text, struct punk_style*);
+DLLEXPORT void punk_label(const char* text, struct punk_style*);
+DLLEXPORT void punk_checkbox(const char* text, int* checked, struct punk_style*);
 
 #endif // __PUNK_H_INCLUDED__

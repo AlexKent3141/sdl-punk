@@ -56,9 +56,7 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   // Initialise TTF and load the embedded font.
   if (TTF_Init() != 0) return -1;
 
-  SDL_RWops* font_data = SDL_RWFromConstMem(Hack_Regular_ttf, Hack_Regular_ttf_len);
-  g_punk_ctx->font = TTF_OpenFontRW(font_data, 0, TEXT_SIZE_PIXELS);
-  if (g_punk_ctx->font == NULL) return -1;
+  memset(&g_punk_ctx->fonts, 0, MAX_TEXT_SIZE_PIXELS*sizeof(TTF_Font*));
 
   // Create the texture on which the UI will be rendered.
   g_punk_ctx->tex = SDL_CreateTexture(
@@ -103,9 +101,12 @@ void punk_quit()
 {
   if (g_punk_ctx == NULL) return;
 
-  if (g_punk_ctx->font != NULL)
+  for (int i = 0; i < MAX_TEXT_SIZE_PIXELS; i++)
   {
-    TTF_CloseFont(g_punk_ctx->font);
+    if (g_punk_ctx->fonts[i] != NULL)
+    {
+      TTF_CloseFont(g_punk_ctx->fonts[i]);
+    }
   }
 
   TTF_Quit();
@@ -167,27 +168,35 @@ void punk_begin()
   }
 }
 
-SDL_Surface* get_text_surface(const char* text)
+SDL_Surface* get_text_surface(const char* text, int font_size)
 {
   // Check the cache.
   for (int i = 0; i < g_punk_ctx->num_strings_rendered; i++)
   {
     struct text_and_surface* tt = &g_punk_ctx->text_surfaces[i];
-    if (strcmp(tt->text, text) == 0)
+    if (strcmp(tt->text, text) == 0 && tt->font_size == font_size)
     {
       return tt->surf;
     }
   }
 
-  SDL_Surface* surf = TTF_RenderText_Blended(
-    g_punk_ctx->font,
-    text,
-    g_punk_ctx->text_colour);
+  // Potentially need to create the font object.
+  TTF_Font* font = g_punk_ctx->fonts[font_size];
+  if (font == NULL)
+  {
+    SDL_RWops* font_data =
+      SDL_RWFromConstMem(Hack_Regular_ttf, Hack_Regular_ttf_len);
+    g_punk_ctx->fonts[font_size] = TTF_OpenFontRW(font_data, 0, font_size);
+    font = g_punk_ctx->fonts[font_size];
+  }
+
+  SDL_Surface* surf = TTF_RenderText_Blended(font, text, g_punk_ctx->text_colour);
 
   int index = g_punk_ctx->num_strings_rendered++;
   struct text_and_surface* text_surface = &g_punk_ctx->text_surfaces[index];
   strcpy(text_surface->text, text);
   text_surface->surf = surf;
+  text_surface->font_size = font_size;
 
   return surf;
 }
@@ -388,6 +397,34 @@ void punk_end_layout()
 
   struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
   layout_step(layout);
+}
+
+void punk_default_style(struct punk_style* style)
+{
+  style->font_size = TEXT_SIZE_PIXELS;
+}
+
+void init_widget(
+  struct widget_state* w,
+  enum widget_type type,
+  const SDL_Rect* loc,
+  struct punk_style* style)
+{
+  w->type = type;
+  memcpy(&w->loc, loc, sizeof(SDL_Rect));
+
+  if (style)
+  {
+    memcpy(&w->style, style, sizeof(struct punk_style));
+  }
+  else
+  {
+    punk_default_style(&w->style);
+  }
+
+  w->currently_active = 0;
+  w->currently_rendered = 0;
+  w->needs_to_be_rendered = 1;
 }
 
 struct widget_state* find_widget(enum widget_type type, const SDL_Rect* loc)

@@ -63,17 +63,17 @@ int main()
 
     punk_begin_vertical_layout("e20:1:1", PUNK_FILL, PUNK_FILL);
 
-    punk_checkbox("Checkmate", &checked);
-    punk_label("It's over");
-    punk_label("9000!");
+    punk_checkbox("Checkmate", &checked, NULL);
+    punk_label("It's over", NULL);
+    punk_label("9000!", NULL);
 
     punk_end_layout(); // Vertical layout
 
-    if (punk_button("hello")) printf("Hello world!\n");
+    if (punk_button("hello", NULL)) printf("Hello world!\n");
 
     if (key_button_visible)
     {
-      if (punk_button("maybe")) printf("Maybe!\n");
+      if (punk_button("maybe", NULL)) printf("Maybe!\n");
     }
     else
     {
@@ -84,9 +84,14 @@ int main()
     {
       punk_begin_vertical_layout("1:2:1", PUNK_FILL, PUNK_FILL);
 
-      if (punk_button("V1") == PUNK_CLICK_RIGHT) printf("V1!\n");
-      if (punk_button("V2")) printf("V2!\n");
-      if (punk_button("V3")) printf("Punk!\n");
+      // Tweak the style for these buttons.
+      struct punk_style style;
+      punk_default_style(&style);
+      style.font_size = 40;
+
+      if (punk_button("V1", &style) == PUNK_CLICK_RIGHT) printf("V1!\n");
+      if (punk_button("V2", &style)) printf("V2!\n");
+      if (punk_button("V3", &style)) printf("Punk!\n");
 
       punk_end_layout(); // Vertical layout
     }
