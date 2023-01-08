@@ -4,6 +4,10 @@
 #include "SDL.h"
 #include "SDL_ttf.h"
 
+#include "assert.h"
+#include "stdlib.h"
+#include "string.h"
+
 #define MAX_WIDGETS 100
 #define MAX_WIDGETS_PER_LAYOUT 20
 #define MAX_NESTED_LAYOUTS 10

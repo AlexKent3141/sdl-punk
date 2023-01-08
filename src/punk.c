@@ -3,10 +3,7 @@
 
 #include "font.h"
 
-#include "assert.h"
 #include "stdint.h"
-#include "stdlib.h"
-#include "string.h"
 
 struct punk_context* g_punk_ctx = NULL;
 

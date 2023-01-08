@@ -1,8 +1,6 @@
 #include "punk.h"
 #include "punk_internal.h"
 
-#include "assert.h"
-
 struct button_state
 {
   char caption[MAX_CAPTION_LENGTH];

@@ -1,8 +1,6 @@
 #include "punk.h"
 #include "punk_internal.h"
 
-#include "assert.h"
-
 struct checkbox_state
 {
   char caption[MAX_CAPTION_LENGTH];
@@ -40,7 +38,7 @@ void draw_checkbox(const struct widget_state* w)
     SDL_Rect checked_rect;
     get_inner_rect(&state->box_area, &checked_rect, 3*WIDGET_BORDER);
 
-    fill_rect(&checked_rect, 0x000000FF);//g_punk_ctx->text_colour);
+    fill_rect(&checked_rect, 0x000000FF);
   }
 }
 
