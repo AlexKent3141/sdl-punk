@@ -75,6 +75,10 @@ int main()
     {
       if (punk_button("maybe")) printf("Maybe!\n");
     }
+    else
+    {
+      punk_skip_layout_widget();
+    }
 
     if (checked)
     {

@@ -374,6 +374,15 @@ void layout_step(struct layout_state* layout)
   }
 }
 
+void punk_skip_layout_widget()
+{
+  int layout_index = g_punk_ctx->num_layouts;
+  assert(layout_index > 0);
+
+  struct layout_state* top_layout = &g_punk_ctx->layouts[layout_index - 1];
+  layout_step(top_layout);
+}
+
 void punk_end_layout()
 {
   --g_punk_ctx->num_layouts;

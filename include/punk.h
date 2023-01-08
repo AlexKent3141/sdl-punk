@@ -44,6 +44,10 @@ DLLEXPORT void punk_begin_horizontal_layout(const char* split, int width, int he
 DLLEXPORT void punk_begin_vertical_layout(const char* split, int width, int height);
 DLLEXPORT void punk_end_layout();
 
+// Use this function to leave an empty area inside a layout rather than populating
+// every slot with a widget.
+DLLEXPORT void punk_skip_layout_widget();
+
 enum punk_click_type
 {
   PUNK_CLICK_NONE,
