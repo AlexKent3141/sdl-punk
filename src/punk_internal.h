@@ -112,6 +112,8 @@ void get_inner_rect(const SDL_Rect*, SDL_Rect*, int);
 
 SDL_Surface* get_text_surface(const char*);
 
+void layout_step(struct layout_state*);
+
 int hit_test(const SDL_Rect*, int32_t, int32_t);
 
 struct widget_state* find_widget(enum widget_type, const SDL_Rect*);
