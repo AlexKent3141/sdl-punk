@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16.3)
 project(punk)
 
+option(BUILD_DEMO "Build the demo app" ON)
+
 # Download and build dependencies.
 include(cmake/CPM.cmake)
 
@@ -34,10 +36,12 @@ target_link_libraries(punk
     SDL2
     SDL2_ttf)
 
-# Create the demo executable.
-add_executable(punk_demo
-  src/demo.c)
+if(BUILD_DEMO)
+  # Create the demo executable.
+  add_executable(punk_demo
+    src/demo.c)
 
-target_link_libraries(punk_demo
-  PRIVATE
-    punk)
+  target_link_libraries(punk_demo
+    PRIVATE
+      punk)
+endif()
