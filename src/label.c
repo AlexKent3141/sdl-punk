@@ -10,6 +10,8 @@ struct label_state
 
 void draw_label(const struct widget_state* w)
 {
+  clear_rect(&w->loc);
+
   struct label_state* state = w->state.label;
 
   // Render the text.
@@ -27,6 +29,14 @@ void punk_label(const char* caption)
   if (w)
   {
     w->needs_to_be_rendered = 1;
+
+    // If the caption has changed then force a re-draw.
+    struct label_state* current_state = w->state.label;
+    if (strcmp(current_state->caption, caption) != 0)
+    {
+      strcpy(current_state->caption, caption);
+      w->currently_rendered = 0;
+    }
   }
   else
   {

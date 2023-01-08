@@ -15,6 +15,8 @@ void draw_checkbox(const struct widget_state* w)
 {
   assert(w->type == CHECKBOX);
 
+  clear_rect(&w->loc);
+
   struct checkbox_state* state = w->state.checkbox;
 
   // Render the text.
@@ -53,6 +55,16 @@ void punk_checkbox(const char* caption, int* checked)
   if (w)
   {
     w->needs_to_be_rendered = 1;
+
+    // If the state has changed then force a re-draw.
+    struct checkbox_state* current_state = w->state.checkbox;
+    if (strcmp(current_state->caption, caption) != 0 ||
+        current_state->checked != *checked)
+    {
+      strcpy(current_state->caption, caption);
+      current_state->checked = *checked;
+      w->currently_rendered = 0;
+    }
   }
   else
   {

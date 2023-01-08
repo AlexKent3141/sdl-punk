@@ -60,7 +60,7 @@ struct layout_state
 
 struct text_and_surface
 {
-  const char* text;
+  char text[MAX_CAPTION_LENGTH];
   SDL_Surface* surf;
 };
 

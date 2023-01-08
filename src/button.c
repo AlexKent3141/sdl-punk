@@ -13,6 +13,8 @@ void draw_button(const struct widget_state* w)
   SDL_Rect inner_rect;
   get_inner_rect(&w->loc, &inner_rect, WIDGET_BORDER);
 
+  clear_rect(&w->loc);
+
   struct button_state* state = w->state.button;
 
   fill_rect(&w->loc, g_punk_ctx->back_colour);
@@ -35,6 +37,14 @@ enum punk_click_type punk_button(const char* caption)
   if (w)
   {
     w->needs_to_be_rendered = 1;
+
+    // If the caption has changed then force a re-draw.
+    struct button_state* current_state = w->state.button;
+    if (strcmp(current_state->caption, caption) != 0)
+    {
+      strcpy(current_state->caption, caption);
+      w->currently_rendered = 0;
+    }
   }
   else
   {

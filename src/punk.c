@@ -189,7 +189,7 @@ SDL_Surface* get_text_surface(const char* text)
 
   int index = g_punk_ctx->num_strings_rendered++;
   struct text_and_surface* text_surface = &g_punk_ctx->text_surfaces[index];
-  text_surface->text = text;
+  strcpy(text_surface->text, text);
   text_surface->surf = surf;
 
   return surf;
