@@ -73,7 +73,7 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   // Make the texture fully transparent and cache the transparent colour.
   SDL_Surface* surface;
   SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &surface);
-  g_punk_ctx->back_colour = SDL_MapRGBA(surface->format, 255, 0, 0, 0);
+  g_punk_ctx->back_colour = SDL_MapRGBA(surface->format, 0, 0, 0, 0);
   g_punk_ctx->fore_colour = SDL_MapRGBA(surface->format, 150, 150, 150, 255);
   g_punk_ctx->active_colour = SDL_MapRGBA(surface->format, 170, 170, 170, 255);
   SDL_FillRect(surface, NULL, g_punk_ctx->back_colour);
