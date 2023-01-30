@@ -86,7 +86,6 @@ void punk_checkbox(const char* caption, int* checked, struct punk_style* style)
     state->box_area.w = TEXT_SIZE_PIXELS;
     state->box_area.x += state->text_area.w;
     state->box_area.h = TEXT_SIZE_PIXELS;
-    state->box_area.y = 0.5 * (state->text_area.h - TEXT_SIZE_PIXELS);
     w->state.checkbox = state;
     w->draw = &draw_checkbox;
   }
