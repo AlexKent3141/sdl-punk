@@ -83,9 +83,10 @@ void punk_checkbox(const char* caption, int* checked, struct punk_style* style)
     memcpy(&state->text_area, &layout->current_child, sizeof(SDL_Rect));
     state->text_area.w -= TEXT_SIZE_PIXELS;
     memcpy(&state->box_area, &layout->current_child, sizeof(SDL_Rect));
-    state->box_area.w = TEXT_SIZE_PIXELS;
-    state->box_area.x += state->text_area.w;
-    state->box_area.h = TEXT_SIZE_PIXELS;
+    state->box_area.w = TEXT_SIZE_PIXELS - 2;
+    state->box_area.x += state->text_area.w + 1;
+    state->box_area.h = TEXT_SIZE_PIXELS - 2;
+    state->box_area.y += 1;
     w->state.checkbox = state;
     w->draw = &draw_checkbox;
   }
