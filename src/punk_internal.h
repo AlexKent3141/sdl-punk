@@ -60,7 +60,7 @@ struct layout_state
   SDL_Rect current_child;
   int width;
   int height;
-  int widget_sizes[MAX_WIDGETS_PER_LAYOUT];
+  float widget_sizes[MAX_WIDGETS_PER_LAYOUT];
   int num_widgets;
 };
 

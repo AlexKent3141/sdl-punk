@@ -264,10 +264,10 @@ void calculate_sizes(const char* split, struct layout_state* layout, int max_siz
     token = strtok(NULL, ":");
   }
 
-  int ratio_unit_size = 0;
+  float ratio_unit_size = 0;
   if (ratio_units_used > 0)
   {
-    ratio_unit_size = (max_size - exact_pixels_used) / ratio_units_used;
+    ratio_unit_size = (float)(max_size - exact_pixels_used) / ratio_units_used;
   }
 
   for (int i = 0; i < layout->num_widgets; i++)
