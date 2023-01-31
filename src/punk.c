@@ -317,6 +317,8 @@ void punk_begin_horizontal_layout(const char* split, int width, int height)
 
   calculate_sizes(split, layout, layout->width);
 
+  layout->current_x = layout->current_child.x;
+  layout->current_y = layout->current_child.y;
   layout->current_child.w = layout->widget_sizes[0];
 
   ++g_punk_ctx->num_layouts;
@@ -357,6 +359,8 @@ void punk_begin_vertical_layout(const char* split, int width, int height)
 
   calculate_sizes(split, layout, layout->height);
 
+  layout->current_x = layout->current_child.x;
+  layout->current_y = layout->current_child.y;
   layout->current_child.h = layout->widget_sizes[0];
 
   ++g_punk_ctx->num_layouts;
@@ -367,17 +371,20 @@ void layout_step(struct layout_state* layout)
   switch (layout->type)
   {
     case HORIZONTAL:
-      layout->current_child.x += layout->widget_sizes[layout->current_child_index++];
+      layout->current_x += layout->widget_sizes[layout->current_child_index++];
       layout->current_child.w = layout->widget_sizes[layout->current_child_index];
       break;
     case VERTICAL:
-      layout->current_child.y += layout->widget_sizes[layout->current_child_index++];
+      layout->current_y += layout->widget_sizes[layout->current_child_index++];
       layout->current_child.h = layout->widget_sizes[layout->current_child_index];
       break;
     default:
       assert(0);
       break;
   }
+
+  layout->current_child.x = layout->current_x;
+  layout->current_child.y = layout->current_y;
 }
 
 void punk_skip_layout_widget()

@@ -58,6 +58,8 @@ struct layout_state
   enum layout_type type;
   int current_child_index;
   SDL_Rect current_child;
+  float current_x;
+  float current_y;
   int width;
   int height;
   float widget_sizes[MAX_WIDGETS_PER_LAYOUT];
