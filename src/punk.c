@@ -399,6 +399,24 @@ void punk_end_layout()
   layout_step(layout);
 }
 
+int punk_current_rect(struct SDL_Rect* rect)
+{
+  if (rect == NULL)
+  {
+    return 1;
+  }
+
+  if (g_punk_ctx->num_layouts == 0)
+  {
+    // Cannot get a widget rect with no layout.
+    return 2;
+  }
+
+  struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
+  memcpy(rect, &layout->current_child, sizeof(struct SDL_Rect));
+  return 0;
+}
+
 void punk_default_style(struct punk_style* style)
 {
   style->font_size = TEXT_SIZE_PIXELS;

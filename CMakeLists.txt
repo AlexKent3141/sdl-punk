@@ -37,11 +37,18 @@ target_link_libraries(punk
     SDL2_ttf)
 
 if(BUILD_DEMO)
-  # Create the demo executable.
+  # Create the demo executables.
   add_executable(punk_demo
     src/demo.c)
 
   target_link_libraries(punk_demo
+    PRIVATE
+      punk)
+
+  add_executable(punk_demo_grid
+    src/demo_grid.c)
+
+  target_link_libraries(punk_demo_grid
     PRIVATE
       punk)
 endif()

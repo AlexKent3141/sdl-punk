@@ -14,6 +14,7 @@
 
 // Forward declare the SDL types we depend on.
 struct SDL_Renderer;
+struct SDL_Rect;
 union SDL_Event;
 
 struct punk_context;
@@ -47,6 +48,13 @@ DLLEXPORT void punk_end_layout();
 // Use this function to leave an empty area inside a layout rather than populating
 // every slot with a widget.
 DLLEXPORT void punk_skip_layout_widget();
+
+// Get the rect for the current widget.
+// This is useful for debugging, but could also be used to decorate an existing
+// widget.
+// The return value is non-zero in the case of an error (perhaps there is no layout
+// defined?).
+DLLEXPORT int punk_current_rect(struct SDL_Rect*);
 
 /*
  Style can be customised on a per-widget basis.
