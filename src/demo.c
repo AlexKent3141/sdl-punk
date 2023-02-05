@@ -88,6 +88,7 @@ int main()
       struct punk_style style;
       punk_default_style(&style);
       style.font_size = 40;
+      style.text_colour_rgba = 0xFF0000FF;
 
       if (punk_button("V1", &style) == PUNK_CLICK_RIGHT) printf("V1!\n");
       if (punk_button("V2", &style)) printf("V2!\n");

@@ -2,6 +2,7 @@
 #define __PUNK_H_INCLUDED__
 
 #include "stdlib.h"
+#include "stdint.h"
 
 #ifdef WIN32
 #define DLLEXPORT __declspec(dllexport)
@@ -66,6 +67,7 @@ DLLEXPORT int punk_current_rect(struct SDL_Rect*);
 struct punk_style
 {
   int font_size;
+  uint32_t text_colour_rgba;
 };
 
 DLLEXPORT void punk_default_style(struct punk_style*);

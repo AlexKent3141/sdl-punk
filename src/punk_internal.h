@@ -70,7 +70,7 @@ struct text_and_surface
 {
   char text[MAX_CAPTION_LENGTH];
   SDL_Surface* surf;
-  int font_size;
+  struct punk_style style;
 };
 
 struct punk_context
@@ -115,7 +115,7 @@ void clear_rect(const SDL_Rect*);
 void render_text(SDL_Surface*, const SDL_Rect*);
 void get_inner_rect(const SDL_Rect*, SDL_Rect*, int);
 
-SDL_Surface* get_text_surface(const char*, int);
+SDL_Surface* get_text_surface(const char*, const struct punk_style*);
 
 void layout_step(struct layout_state*);
 

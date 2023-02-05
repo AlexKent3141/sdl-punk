@@ -13,8 +13,7 @@ void draw_label(const struct widget_state* w)
   struct label_state* state = w->state.label;
 
   // Render the text.
-  SDL_Surface* text_surface =
-    get_text_surface(state->caption, w->style.font_size);
+  SDL_Surface* text_surface = get_text_surface(state->caption, &w->style);
   render_text(text_surface, &w->loc);
 }
 

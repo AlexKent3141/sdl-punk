@@ -168,35 +168,46 @@ void punk_begin()
   }
 }
 
-SDL_Surface* get_text_surface(const char* text, int font_size)
+SDL_Surface* get_text_surface(const char* text, const struct punk_style* style)
 {
   // Check the cache.
   for (int i = 0; i < g_punk_ctx->num_strings_rendered; i++)
   {
     struct text_and_surface* tt = &g_punk_ctx->text_surfaces[i];
-    if (strcmp(tt->text, text) == 0 && tt->font_size == font_size)
+    if (strcmp(tt->text, text) == 0 &&
+        memcmp(&tt->style, style, sizeof(struct punk_style)) == 0)
     {
       return tt->surf;
     }
   }
 
   // Potentially need to create the font object.
-  TTF_Font* font = g_punk_ctx->fonts[font_size];
+  TTF_Font* font = g_punk_ctx->fonts[style->font_size];
   if (font == NULL)
   {
     SDL_RWops* font_data =
       SDL_RWFromConstMem(Hack_Regular_ttf, Hack_Regular_ttf_len);
-    g_punk_ctx->fonts[font_size] = TTF_OpenFontRW(font_data, 0, font_size);
-    font = g_punk_ctx->fonts[font_size];
+    g_punk_ctx->fonts[style->font_size] =
+      TTF_OpenFontRW(font_data, 0, style->font_size);
+    font = g_punk_ctx->fonts[style->font_size];
   }
 
-  SDL_Surface* surf = TTF_RenderText_Blended(font, text, g_punk_ctx->text_colour);
+  uint32_t rgba = style->text_colour_rgba;
+  SDL_Color col =
+  {
+    rgba >> 24,
+    (rgba >> 16) & 0xFF,
+    (rgba >> 8) & 0xFF,
+    rgba & 0xFF
+  };
+
+  SDL_Surface* surf = TTF_RenderText_Blended(font, text, col);
 
   int index = g_punk_ctx->num_strings_rendered++;
   struct text_and_surface* text_surface = &g_punk_ctx->text_surfaces[index];
   strcpy(text_surface->text, text);
   text_surface->surf = surf;
-  text_surface->font_size = font_size;
+  memcpy(&text_surface->style, style, sizeof(struct punk_style));
 
   return surf;
 }
@@ -427,6 +438,7 @@ int punk_current_rect(struct SDL_Rect* rect)
 void punk_default_style(struct punk_style* style)
 {
   style->font_size = TEXT_SIZE_PIXELS;
+  style->text_colour_rgba = 0x000000FF;
 }
 
 void init_widget(
