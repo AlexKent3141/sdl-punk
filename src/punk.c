@@ -7,12 +7,6 @@
 
 struct punk_context* g_punk_ctx = NULL;
 
-enum layout_type
-{
-  HORIZONTAL,
-  VERTICAL
-};
-
 void fill_rect(const SDL_Rect* rect, uint32_t col)
 {
   SDL_Surface* surface;

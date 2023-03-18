@@ -53,6 +53,12 @@ struct widget_state
   void (*draw)(const struct widget_state*);
 };
 
+enum layout_type
+{
+  HORIZONTAL,
+  VERTICAL
+};
+
 struct layout_state
 {
   enum layout_type type;
