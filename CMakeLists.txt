@@ -25,6 +25,12 @@ add_library(punk SHARED
   src/checkbox.c
   src/font.h)
 
+if(UNIX)
+  target_compile_options(punk
+    PRIVATE
+      -Wall -Werror -Wpedantic)
+endif()
+
 target_include_directories(punk
   PUBLIC
     include/
