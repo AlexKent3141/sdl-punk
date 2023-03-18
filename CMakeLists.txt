@@ -34,6 +34,7 @@ add_library(punk SHARED
   src/checkbox.c
   src/picturebox.c
   src/picture_button.c
+  src/textbox.c
   src/font.h)
 
 if(UNIX)

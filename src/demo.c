@@ -34,6 +34,7 @@ int main()
 
   int key_button_visible = 0;
   int checked = 0;
+  char buf[255] = {0};
   struct punk_style pb_style, btn_style, lbl_style;
 
   punk_default_style(&pb_style);
@@ -72,12 +73,13 @@ int main()
 
     punk_begin_horizontal_layout("1:1:1:1", PUNK_FILL, PUNK_FILL);
 
-    punk_begin_vertical_layout("1:e20:1:1:1", PUNK_FILL, PUNK_FILL);
+    punk_begin_vertical_layout("1:e20:e20:1:1:1", PUNK_FILL, PUNK_FILL);
 
     // Tweak the style for the the picture box.
     punk_picturebox("res/punk.png", &pb_style);
     punk_checkbox("Checkmate", &checked, NULL);
 
+    punk_textbox(buf, NULL);
     punk_label("It's over", &lbl_style);
     punk_label("9000!", &lbl_style);
     if (punk_picture_button("res/punk.png", &pb_style)) printf("Punk!\n");

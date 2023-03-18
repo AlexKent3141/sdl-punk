@@ -25,7 +25,8 @@ enum widget_type
   LABEL,
   CHECKBOX,
   PICTUREBOX,
-  PICTURE_BUTTON
+  PICTURE_BUTTON,
+  TEXTBOX
 };
 
 struct button_state;
@@ -33,6 +34,7 @@ struct label_state;
 struct checkbox_state;
 struct picturebox_state;
 struct picture_button_state;
+struct textbox_state;
 
 struct widget_state
 {
@@ -55,6 +57,7 @@ struct widget_state
     struct checkbox_state* checkbox;
     struct picturebox_state* picturebox;
     struct picture_button_state* picture_button;
+    struct textbox_state* textbox;
     void* data;
   } state;
 
