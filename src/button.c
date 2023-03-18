@@ -13,8 +13,6 @@ void draw_button(const struct widget_state* w)
 
   clear_rect(&w->loc);
 
-  struct button_state* state = w->state.button;
-
   const struct punk_style* style = &w->style;
 
   uint32_t col = w->needs_to_be_active
@@ -22,8 +20,7 @@ void draw_button(const struct widget_state* w)
   fill_rect(&inner_rect, col);
 
   // Render the text.
-  SDL_Surface* text_surface = get_text_surface(state->caption, style);
-  render_text(text_surface, &w->loc);
+  render_text(w->text, &w->loc);
 }
 
 enum punk_click_type punk_button(const char* caption, const struct punk_style* style)
@@ -42,6 +39,8 @@ enum punk_click_type punk_button(const char* caption, const struct punk_style* s
     if (strcmp(current_state->caption, caption) != 0)
     {
       strcpy(current_state->caption, caption);
+      SDL_FreeSurface(w->text);
+      w->text = create_text_surface(caption, &w->style);
       w->currently_rendered = 0;
     }
 
@@ -61,6 +60,7 @@ enum punk_click_type punk_button(const char* caption, const struct punk_style* s
       (struct button_state*)malloc(sizeof(struct button_state));
     strcpy(state->caption, caption);
     w->state.button = state;
+    w->text = create_text_surface(caption, &w->style);
     w->draw = &draw_button;
   }
 

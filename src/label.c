@@ -14,11 +14,8 @@ void draw_label(const struct widget_state* w)
   const struct punk_style* style = &w->style;
   fill_rect(&inner_rect, style->back_colour_rgba);
 
-  struct label_state* state = w->state.label;
-
   // Render the text.
-  SDL_Surface* text_surface = get_text_surface(state->caption, &w->style);
-  render_text(text_surface, &w->loc);
+  render_text(w->text, &w->loc);
 }
 
 void punk_label(const char* caption, const struct punk_style* style)
@@ -37,6 +34,8 @@ void punk_label(const char* caption, const struct punk_style* style)
     if (strcmp(current_state->caption, caption) != 0)
     {
       strcpy(current_state->caption, caption);
+      SDL_FreeSurface(w->text);
+      w->text = create_text_surface(caption, &w->style);
       w->currently_rendered = 0;
     }
 
@@ -56,6 +55,7 @@ void punk_label(const char* caption, const struct punk_style* style)
       (struct label_state*)malloc(sizeof(struct label_state));
     strcpy(state->caption, caption);
     w->state.label = state;
+    w->text = create_text_surface(caption, &w->style);
     w->draw = &draw_label;
   }
 

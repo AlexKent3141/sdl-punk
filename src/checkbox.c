@@ -18,8 +18,7 @@ void draw_checkbox(const struct widget_state* w)
   struct checkbox_state* state = w->state.checkbox;
 
   // Render the text.
-  SDL_Surface* text_surface = get_text_surface(state->caption, &w->style);
-  render_text(text_surface, &state->text_area);
+  render_text(w->text, &state->text_area);
 
   // The check box needs to have a border and some indication of
   // when it's focused.
@@ -62,6 +61,8 @@ void punk_checkbox(const char* caption, int* checked, const struct punk_style* s
     {
       strcpy(current_state->caption, caption);
       current_state->checked = *checked;
+      SDL_FreeSurface(w->text);
+      w->text = create_text_surface(caption, &w->style);
       w->currently_rendered = 0;
     }
 
@@ -88,6 +89,7 @@ void punk_checkbox(const char* caption, int* checked, const struct punk_style* s
     state->box_area.h = TEXT_SIZE_PIXELS - 2;
     state->box_area.y += 1;
     w->state.checkbox = state;
+    w->text = create_text_surface(caption, &w->style);
     w->draw = &draw_checkbox;
   }
 
