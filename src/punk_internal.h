@@ -130,6 +130,8 @@ struct punk_context
   // Event status.
   SDL_MouseMotionEvent motion;
   SDL_MouseButtonEvent click;
+  SDL_KeyboardEvent key;
+  SDL_TextInputEvent text;
 
   // Keep track of where we are in each nested layout.
   struct layout_state layouts[MAX_NESTED_LAYOUTS];

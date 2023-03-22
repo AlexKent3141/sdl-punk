@@ -71,11 +71,9 @@ void punk_textbox(char* text, struct punk_style* style)
 
   layout_step(layout);
 
-  // TODO: If the text has changed then re-render.
-
-  // Check whether the button has been clicked.
+  // Check whether the textbox has been selected.
   SDL_MouseButtonEvent* click = &g_punk_ctx->click;
-  if (click->type == 0) return;
+  if (click->type == 0) goto no_click;
 
   if (hit_test(&w->loc, click->x, click->y))
   {
@@ -100,5 +98,16 @@ void punk_textbox(char* text, struct punk_style* style)
       w->currently_rendered = 0;
       current_state->selected = 0;
     }
+  }
+
+no_click: ;
+
+  SDL_TextInputEvent* text_input = &g_punk_ctx->text;
+  if (text_input->type != 0 && current_state->selected)
+  {
+    int len = strlen(text);
+    memcpy(&text[len], text_input->text, strlen(text_input->text));
+    text[len + strlen(text_input->text) + 1] = '\0';
+    w->currently_rendered = 0;
   }
 }

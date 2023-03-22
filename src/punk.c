@@ -30,14 +30,33 @@ void render_text(SDL_Surface* text, const SDL_Rect* rect)
   SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &target);
 
   // Calculate the target rect.
-  // Note: we've created the text with the right size - just need to position it.
-  SDL_Rect temp;
-  temp.h = text->h;
-  temp.w = text->w;
-  temp.x = rect->x + 0.5f * (rect->w - temp.w);
-  temp.y = rect->y + 0.5f * (rect->h - temp.h);
+  // If the text is too long then clip it.
 
-  SDL_BlitSurface(text, NULL, target, &temp);
+  if (text->w <= rect->w)
+  {
+    SDL_Rect temp;
+    temp.h = text->h;
+    temp.w = text->w;
+    temp.x = rect->x + 0.5f * (rect->w - temp.w);
+    temp.y = rect->y + 0.5f * (rect->h - temp.h);
+
+    SDL_BlitSurface(text, NULL, target, &temp);
+  }
+  else
+  {
+    SDL_Rect source;
+    source.h = text->h;
+    source.w = rect->w;
+    source.x = text->w - rect->w;
+    source.y = 0;
+
+    SDL_Rect temp;
+    memcpy(&temp, rect, sizeof(struct SDL_Rect));
+    temp.h = text->h;
+    temp.y = rect->y + 0.5f * (rect->h - temp.h);
+
+    SDL_BlitSurface(text, &source, target, &temp);
+  }
 
   SDL_UnlockTexture(g_punk_ctx->tex);
 }
@@ -121,6 +140,8 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   // Invalidate the cached events.
   g_punk_ctx->motion.type = 0;
   g_punk_ctx->click.type = 0;
+  g_punk_ctx->key.type = 0;
+  g_punk_ctx->text.type = 0;
 
   return 0;
 }
@@ -178,6 +199,16 @@ void punk_handle_event(SDL_Event* e)
     case SDL_MOUSEMOTION:
     {
       memcpy(&g_punk_ctx->motion, &e->motion, sizeof(SDL_MouseMotionEvent));
+      break;
+    }
+    case SDL_KEYDOWN:
+    {
+      memcpy(&g_punk_ctx->key, &e->key, sizeof(SDL_KeyboardEvent));
+      break;
+    }
+    case SDL_TEXTINPUT:
+    {
+      memcpy(&g_punk_ctx->text, &e->text, sizeof(SDL_TextInputEvent));
       break;
     }
   }
@@ -315,8 +346,11 @@ void punk_end()
     }
   }
 
-  // Invalidate cached click event.
+  // Invalidate cached events.
   g_punk_ctx->click.type = 0;
+  g_punk_ctx->motion.type = 0;
+  g_punk_ctx->key.type = 0;
+  g_punk_ctx->text.type = 0;
 }
 
 void punk_render()
