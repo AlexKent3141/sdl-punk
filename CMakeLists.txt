@@ -28,7 +28,7 @@ add_library(punk SHARED
 if(UNIX)
   target_compile_options(punk
     PRIVATE
-      -Wall -Werror -Wpedantic)
+      -Wall -Werror -Wpedantic -fvisibility=hidden)
 endif()
 
 target_include_directories(punk

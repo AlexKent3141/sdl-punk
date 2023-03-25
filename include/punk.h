@@ -7,8 +7,7 @@
 #ifdef WIN32
 #define DLLEXPORT __declspec(dllexport)
 #else
-// TODO
-#define DLLEXPORT
+#define DLLEXPORT __attribute__((visibility("default")))
 #endif
 
 #define PUNK_FILL -1
