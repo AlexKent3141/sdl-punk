@@ -1,5 +1,6 @@
 #include "punk.h"
 #include "punk_internal.h"
+#include "SDL_image.h"
 
 #include "font.h"
 
@@ -34,6 +35,36 @@ void render_text(SDL_Surface* text, const SDL_Rect* rect)
   temp.y = rect->y + 0.5f * (rect->h - temp.h);
 
   SDL_BlitSurface(text, NULL, target, &temp);
+
+  SDL_UnlockTexture(g_punk_ctx->tex);
+}
+
+void render_image(SDL_Surface* image, const SDL_Rect* rect)
+{
+  SDL_Surface* target;
+  SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &target);
+
+  // Calculate the target rect.
+  // We want the image to be centred in the target and we want to keep the aspect ratio.
+  const double image_ratio = (double)image->w / image->h;
+  const double target_ratio = (double)rect->w / rect->h;
+
+  SDL_Rect temp;
+  if (image_ratio < target_ratio)
+  {
+    temp.h = rect->h;
+    temp.w = temp.h * image_ratio;
+  }
+  else
+  {
+    temp.w = rect->w;
+    temp.h = temp.w / image_ratio;
+  }
+
+  temp.x = rect->x + 0.5f * (rect->w - temp.w);
+  temp.y = rect->y + 0.5f * (rect->h - temp.h);
+
+  SDL_BlitScaled(image, NULL, target, &temp);
 
   SDL_UnlockTexture(g_punk_ctx->tex);
 }
@@ -119,6 +150,13 @@ void punk_quit()
     SDL_FreeSurface(tt->surf);
   }
 
+  // Clean up cached image surfaces.
+  for (int i = 0; i < g_punk_ctx->num_images_rendered; i++)
+  {
+    struct image_and_surface* is = &g_punk_ctx->image_surfaces[i];
+    SDL_FreeSurface(is->surf);
+  }
+
   // Clean up main texture.
   SDL_DestroyTexture(g_punk_ctx->tex);
   free(g_punk_ctx);
@@ -202,6 +240,29 @@ SDL_Surface* get_text_surface(const char* text, const struct punk_style* style)
   strcpy(text_surface->text, text);
   text_surface->surf = surf;
   memcpy(&text_surface->style, style, sizeof(struct punk_style));
+
+  return surf;
+}
+
+SDL_Surface* get_image_surface(const char* img_path)
+{
+  // Check the cache.
+  for (int i = 0; i < g_punk_ctx->num_images_rendered; i++)
+  {
+    struct image_and_surface* is = &g_punk_ctx->image_surfaces[i];
+    if (strcmp(is->img_path, img_path) == 0)
+    {
+      return is->surf;
+    }
+  }
+
+  // Need to load the image from scratch.
+  SDL_Surface* surf = IMG_Load(img_path);
+
+  int index = g_punk_ctx->num_images_rendered++;
+  struct image_and_surface* image_surface = &g_punk_ctx->image_surfaces[index];
+  strcpy(image_surface->img_path, img_path);
+  image_surface->surf = surf;
 
   return surf;
 }
@@ -433,13 +494,14 @@ void punk_default_style(struct punk_style* style)
 {
   style->font_size = TEXT_SIZE_PIXELS;
   style->text_colour_rgba = 0x000000FF;
+  style->back_colour_rgba = 0xFFFFFFFF;
 }
 
 void init_widget(
   struct widget_state* w,
   enum widget_type type,
   const SDL_Rect* loc,
-  struct punk_style* style)
+  const struct punk_style* style)
 {
   w->type = type;
   memcpy(&w->loc, loc, sizeof(SDL_Rect));

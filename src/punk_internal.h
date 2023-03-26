@@ -13,7 +13,9 @@
 #define MAX_NESTED_LAYOUTS 10
 #define WIDGET_BORDER 1
 #define MAX_STRINGS_RENDERED 1000
+#define MAX_IMAGES_RENDERED 1000
 #define MAX_CAPTION_LENGTH 50
+#define MAX_PATH_LENGTH 255
 #define TEXT_SIZE_PIXELS 20
 #define MAX_TEXT_SIZE_PIXELS 100
 
@@ -21,12 +23,14 @@ enum widget_type
 {
   BUTTON,
   LABEL,
-  CHECKBOX
+  CHECKBOX,
+  PICTUREBOX
 };
 
 struct button_state;
 struct label_state;
 struct checkbox_state;
+struct picturebox_state;
 
 struct widget_state
 {
@@ -47,6 +51,7 @@ struct widget_state
     struct button_state* button;
     struct label_state* label;
     struct checkbox_state* checkbox;
+    struct picturebox_state* picturebox;
     void* data;
   } state;
 
@@ -79,6 +84,12 @@ struct text_and_surface
   struct punk_style style;
 };
 
+struct image_and_surface
+{
+  char img_path[MAX_PATH_LENGTH];
+  SDL_Surface* surf;
+};
+
 struct punk_context
 {
   // Window dimensions.
@@ -99,9 +110,11 @@ struct punk_context
   uint32_t active_colour; // Selected widget
   SDL_Color text_colour;
 
-  // Maintain a cache of textures for each piece of text we've rendered.
+  // Maintain a cache of textures for each image and piece of text we've rendered.
   struct text_and_surface text_surfaces[MAX_STRINGS_RENDERED];
+  struct image_and_surface image_surfaces[MAX_IMAGES_RENDERED];
   int num_strings_rendered;
+  int num_images_rendered;
 
   // Keep track of all widgets we've encountered so far.
   struct widget_state widgets[MAX_WIDGETS];
@@ -119,16 +132,18 @@ struct punk_context
 void fill_rect(const SDL_Rect*, uint32_t);
 void clear_rect(const SDL_Rect*);
 void render_text(SDL_Surface*, const SDL_Rect*);
+void render_image(SDL_Surface*, const SDL_Rect*);
 void get_inner_rect(const SDL_Rect*, SDL_Rect*, int);
 
 SDL_Surface* get_text_surface(const char*, const struct punk_style*);
+SDL_Surface* get_image_surface(const char*);
 
 void layout_step(struct layout_state*);
 
 int hit_test(const SDL_Rect*, int32_t, int32_t);
 
 void init_widget(
-  struct widget_state*, enum widget_type, const SDL_Rect*, struct punk_style*);
+  struct widget_state*, enum widget_type, const SDL_Rect*, const struct punk_style*);
 struct widget_state* find_widget(enum widget_type, const SDL_Rect*);
 
 #endif // __PUNK_INTERNAL_H_INCLUDED__

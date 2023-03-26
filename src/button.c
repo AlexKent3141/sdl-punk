@@ -25,7 +25,7 @@ void draw_button(const struct widget_state* w)
   render_text(text_surface, &w->loc);
 }
 
-enum punk_click_type punk_button(const char* caption, struct punk_style* style)
+enum punk_click_type punk_button(const char* caption, const struct punk_style* style)
 {
   assert(g_punk_ctx->num_layouts > 0);
   struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];

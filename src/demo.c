@@ -34,6 +34,7 @@ int main()
 
   int key_button_visible = 0;
   int checked = 0;
+  struct punk_style style;
 
   SDL_bool stop = SDL_FALSE;
   SDL_Event event;
@@ -61,9 +62,15 @@ int main()
 
     punk_begin_horizontal_layout("1:1:1:1", PUNK_FILL, PUNK_FILL);
 
-    punk_begin_vertical_layout("e20:1:1", PUNK_FILL, PUNK_FILL);
+    punk_begin_vertical_layout("1:e20:1:1", PUNK_FILL, PUNK_FILL);
 
+    // Tweak the style for the the picture box.
+    punk_default_style(&style);
+    style.back_colour_rgba = 0x0000FFFF;
+
+    punk_picturebox("res/punk.png", &style);
     punk_checkbox("Checkmate", &checked, NULL);
+
     punk_label("It's over", NULL);
     punk_label("9000!", NULL);
 
@@ -85,7 +92,6 @@ int main()
       punk_begin_vertical_layout("1:2:1", PUNK_FILL, PUNK_FILL);
 
       // Tweak the style for these buttons.
-      struct punk_style style;
       punk_default_style(&style);
       style.font_size = 40;
       style.text_colour_rgba = 0xFF0000FF;

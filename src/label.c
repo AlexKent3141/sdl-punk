@@ -17,7 +17,7 @@ void draw_label(const struct widget_state* w)
   render_text(text_surface, &w->loc);
 }
 
-void punk_label(const char* caption, struct punk_style* style)
+void punk_label(const char* caption, const struct punk_style* style)
 {
   assert(g_punk_ctx->num_layouts > 0);
   struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];

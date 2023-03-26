@@ -42,7 +42,7 @@ void draw_checkbox(const struct widget_state* w)
   }
 }
 
-void punk_checkbox(const char* caption, int* checked, struct punk_style* style)
+void punk_checkbox(const char* caption, int* checked, const struct punk_style* style)
 {
   assert(g_punk_ctx->num_layouts > 0);
   assert(checked != NULL);

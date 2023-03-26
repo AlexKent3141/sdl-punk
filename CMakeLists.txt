@@ -6,6 +6,10 @@ option(BUILD_DEMO "Build the demo app" ON)
 # Download and build dependencies.
 include(cmake/CPM.cmake)
 
+# Set up some options for SDL2 dependencies.
+set(SDL2TTF_SAMPLES OFF)
+set(SDL2IMAGE_SAMPLES OFF)
+
 CPMAddPackage(
   NAME SDL2
   GIT_REPOSITORY https://github.com/libsdl-org/SDL
@@ -16,6 +20,11 @@ CPMAddPackage(
   GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf
   GIT_TAG release-2.20.1)
 
+CPMAddPackage(
+  NAME SDL2_image
+  GIT_REPOSITORY https://github.com/libsdl-org/SDL_image
+  GIT_TAG release-2.6.3)
+
 add_library(punk SHARED
   include/punk.h
   src/punk_internal.h
@@ -23,6 +32,7 @@ add_library(punk SHARED
   src/button.c
   src/label.c
   src/checkbox.c
+  src/picturebox.c
   src/font.h)
 
 if(UNIX)
@@ -40,7 +50,8 @@ target_include_directories(punk
 target_link_libraries(punk
   PUBLIC
     SDL2
-    SDL2_ttf)
+    SDL2_ttf
+    SDL2_image)
 
 if(BUILD_DEMO)
   # Create the demo executables.
@@ -57,4 +68,7 @@ if(BUILD_DEMO)
   target_link_libraries(punk_demo_grid
     PRIVATE
       punk)
+
+  # Need access to the res folder.
+  file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/res" DESTINATION ${CMAKE_BINARY_DIR})
 endif()
