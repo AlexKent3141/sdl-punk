@@ -23,14 +23,15 @@ void draw_checkbox(const struct widget_state* w)
 
   // The check box needs to have a border and some indication of
   // when it's focused.
-  fill_rect(&state->box_area, g_punk_ctx->fore_colour);
+  const struct punk_style* style = &w->style;
+  fill_rect(&state->box_area, style->control_colour_rgba);
 
   if (w->needs_to_be_active)
   {
     SDL_Rect active_rect;
     get_inner_rect(&state->box_area, &active_rect, WIDGET_BORDER);
 
-    fill_rect(&active_rect, g_punk_ctx->active_colour);
+    fill_rect(&active_rect, style->active_colour_rgba);
   }
 
   if (state->checked)

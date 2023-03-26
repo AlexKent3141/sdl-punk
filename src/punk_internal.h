@@ -105,10 +105,7 @@ struct punk_context
   // The texture we incrementally update as the UI changes state.
   // This is owned by punk.
   SDL_Texture* tex;
-  uint32_t back_colour;
-  uint32_t fore_colour;
-  uint32_t active_colour; // Selected widget
-  SDL_Color text_colour;
+  uint32_t back_colour; // Background where there's no widget.
 
   // Maintain a cache of textures for each image and piece of text we've rendered.
   struct text_and_surface text_surfaces[MAX_STRINGS_RENDERED];

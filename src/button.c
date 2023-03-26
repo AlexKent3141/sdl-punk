@@ -15,13 +15,14 @@ void draw_button(const struct widget_state* w)
 
   struct button_state* state = w->state.button;
 
-  fill_rect(&w->loc, g_punk_ctx->back_colour);
+  const struct punk_style* style = &w->style;
+
   uint32_t col = w->needs_to_be_active
-    ? g_punk_ctx->active_colour : g_punk_ctx->fore_colour;
+    ? style->active_colour_rgba : style->control_colour_rgba;
   fill_rect(&inner_rect, col);
 
   // Render the text.
-  SDL_Surface* text_surface = get_text_surface(state->caption, &w->style);
+  SDL_Surface* text_surface = get_text_surface(state->caption, style);
   render_text(text_surface, &w->loc);
 }
 

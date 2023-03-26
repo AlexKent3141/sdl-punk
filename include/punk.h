@@ -68,6 +68,8 @@ struct punk_style
   int font_size;
   uint32_t text_colour_rgba;
   uint32_t back_colour_rgba;
+  uint32_t control_colour_rgba;
+  uint32_t active_colour_rgba;
 };
 
 DLLEXPORT void punk_default_style(struct punk_style*);

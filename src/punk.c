@@ -99,15 +99,8 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   SDL_Surface* surface;
   SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &surface);
   g_punk_ctx->back_colour = SDL_MapRGBA(surface->format, 0, 0, 0, 0);
-  g_punk_ctx->fore_colour = SDL_MapRGBA(surface->format, 150, 150, 150, 255);
-  g_punk_ctx->active_colour = SDL_MapRGBA(surface->format, 170, 170, 170, 255);
   SDL_FillRect(surface, NULL, g_punk_ctx->back_colour);
   SDL_UnlockTexture(g_punk_ctx->tex);
-
-  g_punk_ctx->text_colour.r = 0;
-  g_punk_ctx->text_colour.g = 0;
-  g_punk_ctx->text_colour.b = 0;
-  g_punk_ctx->text_colour.a = 255;
 
   memset(g_punk_ctx->widgets, 0, MAX_WIDGETS * sizeof(struct widget_state));
   g_punk_ctx->num_widgets = 0;
@@ -495,6 +488,8 @@ void punk_default_style(struct punk_style* style)
   style->font_size = TEXT_SIZE_PIXELS;
   style->text_colour_rgba = 0x000000FF;
   style->back_colour_rgba = 0xFFFFFFFF;
+  style->control_colour_rgba = 0x969696FF;
+  style->active_colour_rgba = 0xAAAAAAFF;
 }
 
 void init_widget(
