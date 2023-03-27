@@ -24,13 +24,15 @@ enum widget_type
   BUTTON,
   LABEL,
   CHECKBOX,
-  PICTUREBOX
+  PICTUREBOX,
+  PICTURE_BUTTON
 };
 
 struct button_state;
 struct label_state;
 struct checkbox_state;
 struct picturebox_state;
+struct picture_button_state;
 
 struct widget_state
 {
@@ -52,6 +54,7 @@ struct widget_state
     struct label_state* label;
     struct checkbox_state* checkbox;
     struct picturebox_state* picturebox;
+    struct picture_button_state* picture_button;
     void* data;
   } state;
 
@@ -63,7 +66,6 @@ enum layout_type
   HORIZONTAL,
   VERTICAL
 };
-
 struct layout_state
 {
   enum layout_type type;

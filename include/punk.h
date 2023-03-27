@@ -86,5 +86,6 @@ DLLEXPORT enum punk_click_type punk_button(const char* text, const struct punk_s
 DLLEXPORT void punk_label(const char* text, const struct punk_style*);
 DLLEXPORT void punk_checkbox(const char* text, int* checked, const struct punk_style*);
 DLLEXPORT void punk_picturebox(const char* img_file, const struct punk_style*);
+DLLEXPORT enum punk_click_type punk_picture_button(const char* img_file, const struct punk_style*);
 
 #endif // __PUNK_H_INCLUDED__

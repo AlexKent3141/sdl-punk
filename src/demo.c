@@ -62,7 +62,7 @@ int main()
 
     punk_begin_horizontal_layout("1:1:1:1", PUNK_FILL, PUNK_FILL);
 
-    punk_begin_vertical_layout("1:e20:1:1", PUNK_FILL, PUNK_FILL);
+    punk_begin_vertical_layout("1:e20:1:1:1", PUNK_FILL, PUNK_FILL);
 
     // Tweak the style for the the picture box.
     punk_default_style(&style);
@@ -73,6 +73,7 @@ int main()
 
     punk_label("It's over", NULL);
     punk_label("9000!", NULL);
+    if (punk_picture_button("res/punk.png", &style)) printf("Punk!\n");
 
     punk_end_layout(); // Vertical layout
 
