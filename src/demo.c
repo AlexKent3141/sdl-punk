@@ -34,7 +34,17 @@ int main()
 
   int key_button_visible = 0;
   int checked = 0;
-  struct punk_style style;
+  struct punk_style pb_style, btn_style, lbl_style;
+
+  punk_default_style(&pb_style);
+  pb_style.back_colour_rgba = 0x0000FFFF;
+
+  punk_default_style(&btn_style);
+  btn_style.font_size = 40;
+  btn_style.text_colour_rgba = 0xFF0000FF;
+
+  punk_default_style(&lbl_style);
+  lbl_style.back_colour_rgba = 0x90EE90FF;
 
   SDL_bool stop = SDL_FALSE;
   SDL_Event event;
@@ -65,15 +75,12 @@ int main()
     punk_begin_vertical_layout("1:e20:1:1:1", PUNK_FILL, PUNK_FILL);
 
     // Tweak the style for the the picture box.
-    punk_default_style(&style);
-    style.back_colour_rgba = 0x0000FFFF;
-
-    punk_picturebox("res/punk.png", &style);
+    punk_picturebox("res/punk.png", &pb_style);
     punk_checkbox("Checkmate", &checked, NULL);
 
-    punk_label("It's over", NULL);
-    punk_label("9000!", NULL);
-    if (punk_picture_button("res/punk.png", &style)) printf("Punk!\n");
+    punk_label("It's over", &lbl_style);
+    punk_label("9000!", &lbl_style);
+    if (punk_picture_button("res/punk.png", &pb_style)) printf("Punk!\n");
 
     punk_end_layout(); // Vertical layout
 
@@ -92,14 +99,9 @@ int main()
     {
       punk_begin_vertical_layout("1:2:1", PUNK_FILL, PUNK_FILL);
 
-      // Tweak the style for these buttons.
-      punk_default_style(&style);
-      style.font_size = 40;
-      style.text_colour_rgba = 0xFF0000FF;
-
-      if (punk_button("V1", &style) == PUNK_CLICK_RIGHT) printf("V1!\n");
-      if (punk_button("V2", &style)) printf("V2!\n");
-      if (punk_button("V3", &style)) printf("Punk!\n");
+      if (punk_button("V1", &btn_style) == PUNK_CLICK_RIGHT) printf("V1!\n");
+      if (punk_button("V2", &btn_style)) printf("V2!\n");
+      if (punk_button("V3", &btn_style)) printf("Punk!\n");
 
       punk_end_layout(); // Vertical layout
     }

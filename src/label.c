@@ -8,7 +8,11 @@ struct label_state
 
 void draw_label(const struct widget_state* w)
 {
-  clear_rect(&w->loc);
+  SDL_Rect inner_rect;
+  get_inner_rect(&w->loc, &inner_rect, WIDGET_BORDER);
+
+  const struct punk_style* style = &w->style;
+  fill_rect(&inner_rect, style->back_colour_rgba);
 
   struct label_state* state = w->state.label;
 
