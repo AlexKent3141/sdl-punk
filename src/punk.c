@@ -94,6 +94,7 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   SDL_SetTextureBlendMode(g_punk_ctx->tex, SDL_BLENDMODE_BLEND);
 
   g_punk_ctx->num_strings_rendered = 0;
+  g_punk_ctx->num_images_rendered = 0;
 
   // Make the texture fully transparent and cache the transparent colour.
   SDL_Surface* surface;
