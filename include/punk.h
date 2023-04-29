@@ -23,6 +23,9 @@ extern struct punk_context* g_punk_ctx;
 DLLEXPORT int punk_init(struct SDL_Renderer*, int, int);
 DLLEXPORT void punk_quit();
 
+// This function is purely for debug purposes: it prints stats about the internal state.
+DLLEXPORT void punk_print_debug_info();
+
 DLLEXPORT void punk_handle_event(union SDL_Event*);
 
 // These functions are used to indicate when the UI definition starts and ends.

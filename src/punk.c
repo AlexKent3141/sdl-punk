@@ -5,6 +5,7 @@
 #include "font.h"
 
 #include "stdint.h"
+#include "stdio.h"
 
 struct punk_context* g_punk_ctx = NULL;
 
@@ -529,4 +530,13 @@ struct widget_state* find_widget(enum widget_type type, const SDL_Rect* loc)
   }
 
   return NULL;
+}
+
+void punk_print_debug_info()
+{
+  printf("Punk state\n");
+  printf("* Widgets: %d / %d\n", g_punk_ctx->num_widgets, MAX_WIDGETS);
+  printf("* Strings: %d / %d\n", g_punk_ctx->num_strings_rendered, MAX_STRINGS_RENDERED);
+  printf("* Images: %d / %d\n", g_punk_ctx->num_images_rendered, MAX_IMAGES_RENDERED);
+  printf("* Nested layouts: %d / %d\n", g_punk_ctx->num_layouts, MAX_NESTED_LAYOUTS);
 }
