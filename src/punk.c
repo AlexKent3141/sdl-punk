@@ -459,6 +459,7 @@ void punk_skip_layout_widget()
 void punk_end_layout()
 {
   --g_punk_ctx->num_layouts;
+  assert(g_punk_ctx->num_layouts >= 0);
 
   if (g_punk_ctx->num_layouts == 0) return;
 
