@@ -7,6 +7,8 @@
 #include "stdint.h"
 #include "stdio.h"
 
+#define MIN(x, y) (x < y ? x : y)
+
 struct punk_context* g_punk_ctx = NULL;
 
 void fill_rect(const SDL_Rect* rect, uint32_t col)
@@ -106,6 +108,7 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
 
   memset(g_punk_ctx->widgets, 0, MAX_WIDGETS * sizeof(struct widget_state));
   g_punk_ctx->num_widgets = 0;
+  g_punk_ctx->next_widget_index = 0;
 
   memset(g_punk_ctx->layouts, 0, MAX_NESTED_LAYOUTS * sizeof(struct layout_state));
   g_punk_ctx->num_layouts = 0;
@@ -539,4 +542,21 @@ void punk_print_debug_info()
   printf("* Strings: %d / %d\n", g_punk_ctx->num_strings_rendered, MAX_STRINGS_RENDERED);
   printf("* Images: %d / %d\n", g_punk_ctx->num_images_rendered, MAX_IMAGES_RENDERED);
   printf("* Nested layouts: %d / %d\n", g_punk_ctx->num_layouts, MAX_NESTED_LAYOUTS);
+}
+
+struct widget_state* next_widget_slot()
+{
+  // Get the widget memory.
+  struct widget_state* w = &g_punk_ctx->widgets[g_punk_ctx->next_widget_index];
+
+  // If there's already a widget here then clear it out.
+  if (w->state.data) free(w->state.data);
+
+  // Update the total widget count.
+  g_punk_ctx->num_widgets = MIN(g_punk_ctx->num_widgets + 1, MAX_WIDGETS);
+
+  // Get the next index.
+  g_punk_ctx->next_widget_index = (g_punk_ctx->next_widget_index + 1) % MAX_WIDGETS;
+
+  return w;
 }

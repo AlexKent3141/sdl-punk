@@ -54,7 +54,7 @@ enum punk_click_type punk_picture_button(const char* img_path, const struct punk
   }
   else
   {
-    w = &g_punk_ctx->widgets[g_punk_ctx->num_widgets++];
+    w = next_widget_slot();
     init_widget(w, PICTURE_BUTTON, &layout->current_child, style);
 
     struct picture_button_state* state =

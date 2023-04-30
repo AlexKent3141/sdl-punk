@@ -47,7 +47,7 @@ void punk_picturebox(const char* img_path, const struct punk_style* style)
   }
   else
   {
-    w = &g_punk_ctx->widgets[g_punk_ctx->num_widgets++];
+    w = next_widget_slot();
     init_widget(w, PICTUREBOX, &layout->current_child, style);
 
     struct picturebox_state* state =

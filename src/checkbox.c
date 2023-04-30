@@ -74,7 +74,7 @@ void punk_checkbox(const char* caption, int* checked, const struct punk_style* s
   }
   else
   {
-    w = &g_punk_ctx->widgets[g_punk_ctx->num_widgets++];
+    w = next_widget_slot();
     init_widget(w, CHECKBOX, &layout->current_child, style);
 
     struct checkbox_state* state =

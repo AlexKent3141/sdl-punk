@@ -118,6 +118,7 @@ struct punk_context
   // Keep track of all widgets we've encountered so far.
   struct widget_state widgets[MAX_WIDGETS];
   int num_widgets;
+  int next_widget_index;
 
   // Event status.
   SDL_MouseMotionEvent motion;
@@ -144,5 +145,7 @@ int hit_test(const SDL_Rect*, int32_t, int32_t);
 void init_widget(
   struct widget_state*, enum widget_type, const SDL_Rect*, const struct punk_style*);
 struct widget_state* find_widget(enum widget_type, const SDL_Rect*);
+
+struct widget_state* next_widget_slot();
 
 #endif // __PUNK_INTERNAL_H_INCLUDED__

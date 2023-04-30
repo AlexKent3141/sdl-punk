@@ -49,7 +49,7 @@ void punk_label(const char* caption, const struct punk_style* style)
   }
   else
   {
-    w = &g_punk_ctx->widgets[g_punk_ctx->num_widgets++];
+    w = next_widget_slot();
     init_widget(w, LABEL, &layout->current_child, style);
 
     struct label_state* state =
