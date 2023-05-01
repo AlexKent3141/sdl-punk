@@ -96,15 +96,20 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
 
   SDL_SetTextureBlendMode(g_punk_ctx->tex, SDL_BLENDMODE_BLEND);
 
-  g_punk_ctx->num_strings_rendered = 0;
-  g_punk_ctx->num_images_rendered = 0;
-
   // Make the texture fully transparent and cache the transparent colour.
   SDL_Surface* surface;
   SDL_LockTextureToSurface(g_punk_ctx->tex, NULL, &surface);
   g_punk_ctx->back_colour = SDL_MapRGBA(surface->format, 0, 0, 0, 0);
   SDL_FillRect(surface, NULL, g_punk_ctx->back_colour);
   SDL_UnlockTexture(g_punk_ctx->tex);
+
+  memset(g_punk_ctx->text_surfaces, 0, MAX_STRINGS_RENDERED* sizeof(struct text_and_surface));
+  g_punk_ctx->num_strings_rendered = 0;
+  g_punk_ctx->next_string_index = 0;
+
+  memset(g_punk_ctx->image_surfaces, 0, MAX_IMAGES_RENDERED* sizeof(struct image_and_surface));
+  g_punk_ctx->num_images_rendered = 0;
+  g_punk_ctx->next_image_index = 0;
 
   memset(g_punk_ctx->widgets, 0, MAX_WIDGETS * sizeof(struct widget_state));
   g_punk_ctx->num_widgets = 0;
@@ -233,8 +238,12 @@ SDL_Surface* get_text_surface(const char* text, const struct punk_style* style)
 
   SDL_Surface* surf = TTF_RenderText_Blended(font, text, col);
 
-  int index = g_punk_ctx->num_strings_rendered++;
-  struct text_and_surface* text_surface = &g_punk_ctx->text_surfaces[index];
+  // Find a slot in the cache. We may need to overwrite.
+  struct text_and_surface* text_surface = &g_punk_ctx->text_surfaces[g_punk_ctx->next_string_index];
+  if (text_surface->surf) SDL_FreeSurface(text_surface->surf);
+  g_punk_ctx->num_strings_rendered = MIN(g_punk_ctx->num_strings_rendered + 1, MAX_STRINGS_RENDERED);
+  g_punk_ctx->next_string_index = (g_punk_ctx->next_string_index + 1) % MAX_STRINGS_RENDERED;
+
   strcpy(text_surface->text, text);
   text_surface->surf = surf;
   memcpy(&text_surface->style, style, sizeof(struct punk_style));
@@ -257,8 +266,13 @@ SDL_Surface* get_image_surface(const char* img_path)
   // Need to load the image from scratch.
   SDL_Surface* surf = IMG_Load(img_path);
 
-  int index = g_punk_ctx->num_images_rendered++;
-  struct image_and_surface* image_surface = &g_punk_ctx->image_surfaces[index];
+  // Find a slot in the cache. We may need to overwrite.
+  struct image_and_surface* image_surface =
+    &g_punk_ctx->image_surfaces[g_punk_ctx->next_image_index];
+  if (image_surface->surf) SDL_FreeSurface(image_surface->surf);
+  g_punk_ctx->num_images_rendered = MIN(g_punk_ctx->num_images_rendered + 1, MAX_IMAGES_RENDERED);
+  g_punk_ctx->next_image_index = (g_punk_ctx->next_image_index + 1) % MAX_IMAGES_RENDERED;
+
   strcpy(image_surface->img_path, img_path);
   image_surface->surf = surf;
 
@@ -546,17 +560,9 @@ void punk_print_debug_info()
 
 struct widget_state* next_widget_slot()
 {
-  // Get the widget memory.
   struct widget_state* w = &g_punk_ctx->widgets[g_punk_ctx->next_widget_index];
-
-  // If there's already a widget here then clear it out.
   if (w->state.data) free(w->state.data);
-
-  // Update the total widget count.
   g_punk_ctx->num_widgets = MIN(g_punk_ctx->num_widgets + 1, MAX_WIDGETS);
-
-  // Get the next index.
   g_punk_ctx->next_widget_index = (g_punk_ctx->next_widget_index + 1) % MAX_WIDGETS;
-
   return w;
 }

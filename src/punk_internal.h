@@ -66,6 +66,7 @@ enum layout_type
   HORIZONTAL,
   VERTICAL
 };
+
 struct layout_state
 {
   enum layout_type type;
@@ -111,9 +112,12 @@ struct punk_context
 
   // Maintain a cache of textures for each image and piece of text we've rendered.
   struct text_and_surface text_surfaces[MAX_STRINGS_RENDERED];
-  struct image_and_surface image_surfaces[MAX_IMAGES_RENDERED];
   int num_strings_rendered;
+  int next_string_index;
+
+  struct image_and_surface image_surfaces[MAX_IMAGES_RENDERED];
   int num_images_rendered;
+  int next_image_index;
 
   // Keep track of all widgets we've encountered so far.
   struct widget_state widgets[MAX_WIDGETS];
