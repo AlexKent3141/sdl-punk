@@ -122,10 +122,6 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   SDL_FillRect(surface, NULL, g_punk_ctx->back_colour);
   SDL_UnlockTexture(g_punk_ctx->tex);
 
-  memset(g_punk_ctx->text_surfaces, 0, MAX_STRINGS_RENDERED* sizeof(struct text_and_surface));
-  g_punk_ctx->num_strings_rendered = 0;
-  g_punk_ctx->next_string_index = 0;
-
   memset(g_punk_ctx->image_surfaces, 0, MAX_IMAGES_RENDERED* sizeof(struct image_and_surface));
   g_punk_ctx->num_images_rendered = 0;
   g_punk_ctx->next_image_index = 0;
@@ -165,13 +161,7 @@ void punk_quit()
   {
     struct widget_state* w = &g_punk_ctx->widgets[i];
     free(w->state.data);
-  }
-
-  // Clean up cached text surfaces.
-  for (int i = 0; i < g_punk_ctx->num_strings_rendered; i++)
-  {
-    struct text_and_surface* tt = &g_punk_ctx->text_surfaces[i];
-    SDL_FreeSurface(tt->surf);
+    if (w->text) SDL_FreeSurface(w->text);
   }
 
   // Clean up cached image surfaces.
@@ -234,19 +224,8 @@ void punk_begin()
   }
 }
 
-SDL_Surface* get_text_surface(const char* text, const struct punk_style* style)
+SDL_Surface* create_text_surface(const char* text, const struct punk_style* style)
 {
-  // Check the cache.
-  for (int i = 0; i < g_punk_ctx->num_strings_rendered; i++)
-  {
-    struct text_and_surface* tt = &g_punk_ctx->text_surfaces[i];
-    if (strcmp(tt->text, text) == 0 &&
-        memcmp(&tt->style, style, sizeof(struct punk_style)) == 0)
-    {
-      return tt->surf;
-    }
-  }
-
   // Potentially need to create the font object.
   TTF_Font* font = g_punk_ctx->fonts[style->font_size];
   if (font == NULL)
@@ -267,19 +246,7 @@ SDL_Surface* get_text_surface(const char* text, const struct punk_style* style)
     rgba & 0xFF
   };
 
-  SDL_Surface* surf = TTF_RenderText_Blended(font, text, col);
-
-  // Find a slot in the cache. We may need to overwrite.
-  struct text_and_surface* text_surface = &g_punk_ctx->text_surfaces[g_punk_ctx->next_string_index];
-  if (text_surface->surf) SDL_FreeSurface(text_surface->surf);
-  g_punk_ctx->num_strings_rendered = MIN(g_punk_ctx->num_strings_rendered + 1, MAX_STRINGS_RENDERED);
-  g_punk_ctx->next_string_index = (g_punk_ctx->next_string_index + 1) % MAX_STRINGS_RENDERED;
-
-  strcpy(text_surface->text, text);
-  text_surface->surf = surf;
-  memcpy(&text_surface->style, style, sizeof(struct punk_style));
-
-  return surf;
+  return TTF_RenderText_Blended(font, text, col);
 }
 
 SDL_Surface* get_image_surface(const char* img_path)
@@ -587,7 +554,6 @@ void punk_print_debug_info()
 {
   printf("Punk state\n");
   printf("* Widgets: %d / %d\n", g_punk_ctx->num_widgets, MAX_WIDGETS);
-  printf("* Strings: %d / %d\n", g_punk_ctx->num_strings_rendered, MAX_STRINGS_RENDERED);
   printf("* Images: %d / %d\n", g_punk_ctx->num_images_rendered, MAX_IMAGES_RENDERED);
   printf("* Nested layouts: %d / %d\n", g_punk_ctx->num_layouts, MAX_NESTED_LAYOUTS);
 }

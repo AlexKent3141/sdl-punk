@@ -77,7 +77,14 @@ int main()
 
     // Tweak the style for the the picture box.
     punk_picturebox("res/punk.png", &pb_style);
-    punk_checkbox("Checkmate", &checked, NULL);
+    if (key_button_visible)
+    {
+      punk_checkbox("Checkmate", &checked, NULL);
+    }
+    else
+    {
+      punk_checkbox("Checkmate1", &checked, NULL);
+    }
 
     punk_textbox(buf, NULL);
     punk_label("It's over", &lbl_style);

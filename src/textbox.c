@@ -14,8 +14,6 @@ void draw_textbox(const struct widget_state* w)
 
   clear_rect(&w->loc);
 
-  struct textbox_state* state = w->state.textbox;
-
   // Border around the textbox.
   fill_rect(&w->loc, 0x000000FF);
 
@@ -23,11 +21,11 @@ void draw_textbox(const struct widget_state* w)
   get_inner_rect(&w->loc, &text_rect, WIDGET_BORDER);
   fill_rect(&text_rect, g_punk_ctx->back_colour);
 
+  const struct textbox_state* state = w->state.textbox;
   if (strlen(state->text) != 0)
   {
     // Render the text.
-    SDL_Surface* text_surface = get_text_surface(state->text, &w->style);
-    render_text(text_surface, &text_rect);
+    render_text(w->text, &text_rect);
   }
 }
 
@@ -50,7 +48,7 @@ void punk_textbox(char* text, struct punk_style* style)
     // Check whether the style has changed.
     if (style != NULL && memcmp(style, &w->style, sizeof(struct punk_style)) != 0)
     {
-      // Style has change so need to render.
+      // Style has changed so need to render.
       memcpy(&w->style, style, sizeof(struct punk_style));
       w->currently_rendered = 0;
     }
@@ -108,6 +106,8 @@ no_click: ;
     int len = strlen(text);
     memcpy(&text[len], text_input->text, strlen(text_input->text));
     text[len + strlen(text_input->text) + 1] = '\0';
+    if (w->text) SDL_FreeSurface(w->text);
+    w->text = create_text_surface(text, &w->style);
     w->currently_rendered = 0;
   }
 }
