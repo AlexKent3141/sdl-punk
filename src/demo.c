@@ -86,7 +86,11 @@ int main()
       punk_checkbox("Checkmate1", &checked, NULL);
     }
 
-    punk_textbox(buf, NULL);
+    if (punk_textbox(buf, NULL))
+    {
+      printf("Text changed: %s\n", buf);
+    }
+
     punk_label("It's over", &lbl_style);
     punk_label("9000!", &lbl_style);
     if (punk_picture_button("res/punk.png", &pb_style)) printf("Punk!\n");

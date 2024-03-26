@@ -30,7 +30,7 @@ void draw_textbox(const struct widget_state* w)
 }
 
 // The text argument backs the actual text the widget shows.
-void punk_textbox(char* text, struct punk_style* style)
+int punk_textbox(char* text, struct punk_style* style)
 {
   assert(g_punk_ctx->num_layouts > 0);
   struct layout_state* layout = &g_punk_ctx->layouts[g_punk_ctx->num_layouts - 1];
@@ -109,5 +109,9 @@ no_click: ;
     if (w->text) SDL_FreeSurface(w->text);
     w->text = create_text_surface(text, &w->style);
     w->currently_rendered = 0;
+
+    return 1;
   }
+
+  return 0;
 }
