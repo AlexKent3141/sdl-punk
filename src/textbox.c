@@ -123,5 +123,22 @@ no_click: ;
     }
   }
 
+  SDL_KeyboardEvent* key = &g_punk_ctx->key;
+  if (key->type == SDL_KEYDOWN && current_state->selected)
+  {
+    if (key->keysym.sym == SDLK_BACKSPACE)
+    {
+      int len = strlen(text);
+      if (len > 0)
+      {
+        text[len - 1] = '\0';
+        if (w->text) SDL_FreeSurface(w->text);
+        w->text = create_text_surface(text, &w->style);
+        w->currently_rendered = 0;
+        return 1;
+      }
+    }
+  }
+
   return 0;
 }
