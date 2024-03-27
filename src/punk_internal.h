@@ -141,6 +141,7 @@ void clear_rect(const SDL_Rect*);
 void render_text(SDL_Surface*, const SDL_Rect*);
 void render_image(SDL_Surface*, const SDL_Rect*);
 void get_inner_rect(const SDL_Rect*, SDL_Rect*, int);
+void text_size(const char*, const struct punk_style*, int*, int*);
 
 SDL_Surface* create_text_surface(const char*, const struct punk_style*);
 SDL_Surface* get_image_surface(const char*);

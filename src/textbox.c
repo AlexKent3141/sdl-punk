@@ -106,11 +106,21 @@ no_click: ;
     int len = strlen(text);
     memcpy(&text[len], text_input->text, strlen(text_input->text));
     text[len + strlen(text_input->text) + 1] = '\0';
-    if (w->text) SDL_FreeSurface(w->text);
-    w->text = create_text_surface(text, &w->style);
-    w->currently_rendered = 0;
 
-    return 1;
+    // Check whether the new text will fit.
+    int width, height;
+    text_size(text, &w->style, &width, &height);
+    if (width >= w->loc.w)
+    {
+      text[len + 1] = '\0';
+    }
+    else
+    {
+      if (w->text) SDL_FreeSurface(w->text);
+      w->text = create_text_surface(text, &w->style);
+      w->currently_rendered = 0;
+      return 1;
+    }
   }
 
   return 0;

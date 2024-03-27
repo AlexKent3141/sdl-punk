@@ -224,6 +224,22 @@ void punk_begin()
   }
 }
 
+void text_size(const char* text, const struct punk_style* style, int* w, int* h)
+{
+  // Potentially need to create the font object.
+  TTF_Font* font = g_punk_ctx->fonts[style->font_size];
+  if (font == NULL)
+  {
+    SDL_RWops* font_data =
+      SDL_RWFromConstMem(Hack_Regular_ttf, Hack_Regular_ttf_len);
+    g_punk_ctx->fonts[style->font_size] =
+      TTF_OpenFontRW(font_data, 0, style->font_size);
+    font = g_punk_ctx->fonts[style->font_size];
+  }
+
+  TTF_SizeText(font, text, w, h);
+}
+
 SDL_Surface* create_text_surface(const char* text, const struct punk_style* style)
 {
   // Potentially need to create the font object.
