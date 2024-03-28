@@ -110,6 +110,6 @@ void punk_checkbox(const char* caption, int* checked, const struct punk_style* s
   {
     *checked = !*checked;
     state->checked = *checked;
-    w->currently_active = 0;
+    w->currently_rendered = 0;
   }
 }
