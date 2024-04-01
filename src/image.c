@@ -12,11 +12,9 @@ void draw_image(const struct widget_state* w)
 
   fill_rect(&w->loc, w->style.back_colour_rgba);
 
-  struct image_state* state = w->state.image;
-
   // Render the image.
-  SDL_Surface* image_surface = get_image_surface(state->img_path);
-  render_image(image_surface, &w->loc);
+  assert(w->img);
+  render_image(w->img, &w->loc);
 }
 
 void punk_image(const char* img_path, const struct punk_style* style)
@@ -30,11 +28,13 @@ void punk_image(const char* img_path, const struct punk_style* style)
   {
     w->needs_to_be_rendered = 1;
 
-    // If the caption has changed then force a re-draw.
+    // If the image path has changed then force a re-draw.
     struct image_state* current_state = w->state.image;
     if (strcmp(current_state->img_path, img_path) != 0)
     {
       strcpy(current_state->img_path, img_path);
+      SDL_FreeSurface(w->img);
+      w->img = create_image_surface(img_path);
       w->currently_rendered = 0;
     }
 
@@ -54,6 +54,7 @@ void punk_image(const char* img_path, const struct punk_style* style)
       (struct image_state*)malloc(sizeof(struct image_state));
     strcpy(state->img_path, img_path);
     w->state.image = state;
+    w->img = create_image_surface(img_path);
     w->draw = &draw_image;
   }
 

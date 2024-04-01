@@ -12,7 +12,6 @@
 #define MAX_WIDGETS_PER_LAYOUT 20
 #define MAX_NESTED_LAYOUTS 10
 #define WIDGET_BORDER 1
-#define MAX_IMAGES_RENDERED 1000
 #define MAX_CAPTION_LENGTH 50
 #define MAX_PATH_LENGTH 255
 #define TEXT_SIZE_PIXELS 20
@@ -48,8 +47,9 @@ struct widget_state
   int currently_rendered;
   int needs_to_be_rendered;
 
-  // Optionally store the currently rendered txt.
+  // Optionally store surfaces for rendering.
   SDL_Surface* text;
+  SDL_Surface* img;
 
   // Widget specific data.
   union
@@ -85,19 +85,6 @@ struct layout_state
   int num_widgets;
 };
 
-struct text_and_surface
-{
-  char text[MAX_CAPTION_LENGTH];
-  SDL_Surface* surf;
-  struct punk_style style;
-};
-
-struct image_and_surface
-{
-  char img_path[MAX_PATH_LENGTH];
-  SDL_Surface* surf;
-};
-
 struct punk_context
 {
   // Window dimensions.
@@ -114,11 +101,6 @@ struct punk_context
   // This is owned by punk.
   SDL_Texture* tex;
   uint32_t back_colour; // Background where there's no widget.
-
-  // Maintain a cache of textures for each image and piece of text we've rendered.
-  struct image_and_surface image_surfaces[MAX_IMAGES_RENDERED];
-  int num_images_rendered;
-  int next_image_index;
 
   // Keep track of all widgets we've encountered so far.
   struct widget_state widgets[MAX_WIDGETS];
@@ -144,7 +126,7 @@ void get_inner_rect(const SDL_Rect*, SDL_Rect*, int);
 void text_size(const char*, const struct punk_style*, int*, int*);
 
 SDL_Surface* create_text_surface(const char*, const struct punk_style*);
-SDL_Surface* get_image_surface(const char*);
+SDL_Surface* create_image_surface(const char*);
 
 void layout_step(struct layout_state*);
 

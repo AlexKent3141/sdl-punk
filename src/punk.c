@@ -122,10 +122,6 @@ int punk_init(SDL_Renderer* renderer, int width, int height)
   SDL_FillRect(surface, NULL, g_punk_ctx->back_colour);
   SDL_UnlockTexture(g_punk_ctx->tex);
 
-  memset(g_punk_ctx->image_surfaces, 0, MAX_IMAGES_RENDERED* sizeof(struct image_and_surface));
-  g_punk_ctx->num_images_rendered = 0;
-  g_punk_ctx->next_image_index = 0;
-
   memset(g_punk_ctx->widgets, 0, MAX_WIDGETS * sizeof(struct widget_state));
   g_punk_ctx->num_widgets = 0;
   g_punk_ctx->next_widget_index = 0;
@@ -162,13 +158,7 @@ void punk_quit()
     struct widget_state* w = &g_punk_ctx->widgets[i];
     free(w->state.data);
     if (w->text) SDL_FreeSurface(w->text);
-  }
-
-  // Clean up cached image surfaces.
-  for (int i = 0; i < g_punk_ctx->num_images_rendered; i++)
-  {
-    struct image_and_surface* is = &g_punk_ctx->image_surfaces[i];
-    SDL_FreeSurface(is->surf);
+    if (w->img) SDL_FreeSurface(w->img);
   }
 
   // Clean up main texture.
@@ -265,32 +255,9 @@ SDL_Surface* create_text_surface(const char* text, const struct punk_style* styl
   return TTF_RenderText_Blended(font, text, col);
 }
 
-SDL_Surface* get_image_surface(const char* img_path)
+SDL_Surface* create_image_surface(const char* img_path)
 {
-  // Check the cache.
-  for (int i = 0; i < g_punk_ctx->num_images_rendered; i++)
-  {
-    struct image_and_surface* is = &g_punk_ctx->image_surfaces[i];
-    if (strcmp(is->img_path, img_path) == 0)
-    {
-      return is->surf;
-    }
-  }
-
-  // Need to load the image from scratch.
-  SDL_Surface* surf = IMG_Load(img_path);
-
-  // Find a slot in the cache. We may need to overwrite.
-  struct image_and_surface* image_surface =
-    &g_punk_ctx->image_surfaces[g_punk_ctx->next_image_index];
-  if (image_surface->surf) SDL_FreeSurface(image_surface->surf);
-  g_punk_ctx->num_images_rendered = MIN(g_punk_ctx->num_images_rendered + 1, MAX_IMAGES_RENDERED);
-  g_punk_ctx->next_image_index = (g_punk_ctx->next_image_index + 1) % MAX_IMAGES_RENDERED;
-
-  strcpy(image_surface->img_path, img_path);
-  image_surface->surf = surf;
-
-  return surf;
+  return IMG_Load(img_path);
 }
 
 void get_inner_rect(const SDL_Rect* initial, SDL_Rect* inner, int border)
@@ -570,7 +537,6 @@ void punk_print_debug_info()
 {
   printf("Punk state\n");
   printf("* Widgets: %d / %d\n", g_punk_ctx->num_widgets, MAX_WIDGETS);
-  printf("* Images: %d / %d\n", g_punk_ctx->num_images_rendered, MAX_IMAGES_RENDERED);
   printf("* Nested layouts: %d / %d\n", g_punk_ctx->num_layouts, MAX_NESTED_LAYOUTS);
 }
 

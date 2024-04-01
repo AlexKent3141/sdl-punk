@@ -13,8 +13,6 @@ void draw_image_button(const struct widget_state* w)
 
   clear_rect(&w->loc);
 
-  struct image_button_state* state = w->state.image_button;
-
   const struct punk_style* style = &w->style;
 
   uint32_t col = w->needs_to_be_active
@@ -22,8 +20,8 @@ void draw_image_button(const struct widget_state* w)
   fill_rect(&inner_rect, col);
 
   // Render the image.
-  SDL_Surface* image_surface = get_image_surface(state->img_path);
-  render_image(image_surface, &w->loc);
+  assert(w->img);
+  render_image(w->img, &w->loc);
 }
 
 enum punk_click_type punk_image_button(const char* img_path, const struct punk_style* style)
@@ -42,6 +40,8 @@ enum punk_click_type punk_image_button(const char* img_path, const struct punk_s
     if (strcmp(current_state->img_path, img_path) != 0)
     {
       strcpy(current_state->img_path, img_path);
+      SDL_FreeSurface(w->img);
+      w->img = create_image_surface(img_path);
       w->currently_rendered = 0;
     }
 
@@ -61,6 +61,7 @@ enum punk_click_type punk_image_button(const char* img_path, const struct punk_s
       (struct image_button_state*)malloc(sizeof(struct image_button_state));
     strcpy(state->img_path, img_path);
     w->state.image_button = state;
+    w->img = create_image_surface(img_path);
     w->draw = &draw_image_button;
   }
 
