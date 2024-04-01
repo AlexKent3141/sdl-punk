@@ -3,7 +3,6 @@
 
 struct textbox_state
 {
-  char* text;
   int selected;
 };
 
@@ -21,8 +20,7 @@ void draw_textbox(const struct widget_state* w)
   get_inner_rect(&w->loc, &text_rect, WIDGET_BORDER);
   fill_rect(&text_rect, g_punk_ctx->back_colour);
 
-  const struct textbox_state* state = w->state.textbox;
-  if (strlen(state->text) != 0)
+  if (w->text)
   {
     // Render the text.
     render_text(w->text, &text_rect);
@@ -41,7 +39,6 @@ int punk_textbox(char* text, struct punk_style* style)
   if (w)
   {
     w->needs_to_be_rendered = 1;
-    w->currently_rendered = 1;
 
     current_state = w->state.textbox;
 
@@ -59,7 +56,6 @@ int punk_textbox(char* text, struct punk_style* style)
     init_widget(w, TEXTBOX, &layout->current_child, style);
 
     current_state = (struct textbox_state*)malloc(sizeof(struct textbox_state));
-    current_state->text = text;
     current_state->selected = 0;
     w->state.textbox = current_state;
     w->draw = &draw_textbox;
