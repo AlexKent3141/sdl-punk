@@ -10,7 +10,7 @@
 
 int checked = 0;
 char buf[255] = {0};
-struct punk_style pb_style, btn_style, lbl_style;
+struct punk_style img_style, btn_style, lbl_style;
 int dialog_visible = 0;
 int key_button_visible = 0;
 
@@ -20,8 +20,8 @@ void show_gui()
 
   punk_begin_vertical_layout("1:e20:e30:1:1:1", PUNK_FILL, PUNK_FILL);
 
-  // Tweak the style for the the picture box.
-  punk_picturebox("res/punk.png", &pb_style);
+  // Tweak the style for the image.
+  punk_image("res/punk.png", &img_style);
   punk_checkbox("Checkmate", &checked, NULL);
 
   if (punk_textbox(buf, NULL))
@@ -31,7 +31,7 @@ void show_gui()
 
   punk_label("It's over", &lbl_style);
   punk_label("9000!", &lbl_style);
-  if (punk_picture_button("res/punk.png", &pb_style))
+  if (punk_image_button("res/punk.png", &img_style))
   {
     printf("Punk!\n");
     dialog_visible = 1;
@@ -136,8 +136,8 @@ int main()
   // Setup punk.
   punk_init(renderer, WIDTH, HEIGHT);
 
-  punk_default_style(&pb_style);
-  pb_style.back_colour_rgba = 0x0000FFFF;
+  punk_default_style(&img_style);
+  img_style.back_colour_rgba = 0x0000FFFF;
 
   punk_default_style(&btn_style);
   btn_style.font_size = 40;

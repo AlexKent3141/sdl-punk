@@ -32,8 +32,8 @@ add_library(punk SHARED
   src/button.c
   src/label.c
   src/checkbox.c
-  src/picturebox.c
-  src/picture_button.c
+  src/image.c
+  src/image_button.c
   src/textbox.c
   src/font.h)
 
