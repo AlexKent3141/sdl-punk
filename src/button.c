@@ -68,7 +68,7 @@ enum punk_click_type punk_button(const char* caption, const struct punk_style* s
 
   // Check the next active state of the widget.
   SDL_MouseMotionEvent* motion = &g_punk_ctx->motion;
-  w->needs_to_be_active = motion->type != 0 && hit_test(&w->loc, motion->x, motion->y);
+  w->needs_to_be_active = hit_test(&w->loc, motion->x, motion->y);
 
   // Check whether the button has been clicked.
   SDL_MouseButtonEvent* click = &g_punk_ctx->click;

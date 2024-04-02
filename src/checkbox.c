@@ -99,8 +99,7 @@ void punk_checkbox(const char* caption, int* checked, const struct punk_style* s
 
   // Check the next active state of the widget.
   SDL_MouseMotionEvent* motion = &g_punk_ctx->motion;
-  w->needs_to_be_active =
-    motion->type != 0 && hit_test(&state->box_area, motion->x, motion->y);
+  w->needs_to_be_active = hit_test(&state->box_area, motion->x, motion->y);
 
   // Check whether the button has been clicked.
   SDL_MouseButtonEvent* click = &g_punk_ctx->click;
