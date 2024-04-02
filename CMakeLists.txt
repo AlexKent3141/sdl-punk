@@ -4,26 +4,15 @@ project(punk)
 option(BUILD_DEMO "Build the demo app" ON)
 
 # Download and build dependencies.
-include(cmake/CPM.cmake)
+include(cmake/GetCPM.cmake)
 
 # Set up some options for SDL2 dependencies.
 set(SDL2TTF_SAMPLES OFF)
 set(SDL2IMAGE_SAMPLES OFF)
 
-CPMAddPackage(
-  NAME SDL2
-  GIT_REPOSITORY https://github.com/libsdl-org/SDL
-  GIT_TAG release-2.0.18)
-
-CPMAddPackage(
-  NAME SDL2_ttf
-  GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf
-  GIT_TAG release-2.20.1)
-
-CPMAddPackage(
-  NAME SDL2_image
-  GIT_REPOSITORY https://github.com/libsdl-org/SDL_image
-  GIT_TAG release-2.6.3)
+CPMAddPackage("gh:libsdl-org/SDL#release-2.0.18")
+CPMAddPackage("gh:libsdl-org/SDL_ttf#release-2.20.1")
+CPMAddPackage("gh:libsdl-org/SDL_image#release-2.6.3")
 
 add_library(punk SHARED
   include/punk.h
