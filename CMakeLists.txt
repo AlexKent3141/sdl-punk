@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.19)
 project(punk)
 
-option(BUILD_DEMO "Build the demo app" ON)
+option(BUILD_DEMO "Build the demo app" OFF)
+option(SUPPORT_IMAGES "Link to SDL_image and support image-based widgets" ON)
+
+if(BUILD_DEMO AND NOT SUPPORT_IMAGES)
+  message("Error: cannot build the demo without image support")
+  return()
+endif()
 
 # Download and build dependencies.
 include(cmake/GetCPM.cmake)
@@ -12,19 +18,19 @@ set(SDL2IMAGE_SAMPLES OFF)
 
 CPMAddPackage("gh:libsdl-org/SDL#release-2.0.18")
 CPMAddPackage("gh:libsdl-org/SDL_ttf#release-2.20.1")
-CPMAddPackage("gh:libsdl-org/SDL_image#release-2.6.3")
 
-add_library(punk SHARED
-  include/punk.h
-  src/punk_internal.h
-  src/punk.c
-  src/button.c
-  src/label.c
-  src/checkbox.c
-  src/image.c
-  src/image_button.c
-  src/textbox.c
-  src/font.h)
+add_library(punk SHARED)
+
+target_sources(punk
+  PRIVATE
+  "include/punk.h"
+  "src/punk_internal.h"
+  "src/punk.c"
+  "src/button.c"
+  "src/label.c"
+  "src/checkbox.c"
+  "src/textbox.c"
+  "src/font.h")
 
 if(UNIX)
   target_compile_options(punk
@@ -41,20 +47,34 @@ target_include_directories(punk
 target_link_libraries(punk
   PUBLIC
     SDL2
-    SDL2_ttf
-    SDL2_image)
+    SDL2_ttf)
+
+if(SUPPORT_IMAGES)
+  add_compile_definitions(WITH_IMAGES)
+
+  CPMAddPackage("gh:libsdl-org/SDL_image#release-2.6.3")
+
+  target_sources(punk
+    PRIVATE
+      "src/image.c"
+      "src/image_button.c")
+
+  target_link_libraries(punk
+    PUBLIC
+      SDL2_image)
+endif()
 
 if(BUILD_DEMO)
   # Create the demo executables.
   add_executable(punk_demo
-    src/demo.c)
+    "src/demo.c")
 
   target_link_libraries(punk_demo
     PRIVATE
       punk)
 
   add_executable(punk_demo_grid
-    src/demo_grid.c)
+    "src/demo_grid.c")
 
   target_link_libraries(punk_demo_grid
     PRIVATE

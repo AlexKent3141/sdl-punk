@@ -1,6 +1,5 @@
 #include "punk.h"
 #include "punk_internal.h"
-#include "SDL_image.h"
 
 #include "font.h"
 
@@ -8,6 +7,15 @@
 #include "stdio.h"
 
 #define MIN(x, y) (x < y ? x : y)
+
+#ifdef WITH_IMAGES
+#include "SDL_image.h"
+
+SDL_Surface* create_image_surface(const char* img_path)
+{
+  return IMG_Load(img_path);
+}
+#endif
 
 struct punk_context* g_punk_ctx = NULL;
 
@@ -253,11 +261,6 @@ SDL_Surface* create_text_surface(const char* text, const struct punk_style* styl
   };
 
   return TTF_RenderText_Blended(font, text, col);
-}
-
-SDL_Surface* create_image_surface(const char* img_path)
-{
-  return IMG_Load(img_path);
 }
 
 void get_inner_rect(const SDL_Rect* initial, SDL_Rect* inner, int border)
