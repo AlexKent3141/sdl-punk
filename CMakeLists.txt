@@ -16,8 +16,8 @@ include(cmake/GetCPM.cmake)
 set(SDL2TTF_SAMPLES OFF)
 set(SDL2IMAGE_SAMPLES OFF)
 
-CPMAddPackage("gh:libsdl-org/SDL#release-2.0.18")
-CPMAddPackage("gh:libsdl-org/SDL_ttf#release-2.20.1")
+CPMAddPackage("gh:libsdl-org/SDL#release-2.30.5")
+CPMAddPackage("gh:libsdl-org/SDL_ttf#release-2.22.0")
 
 add_library(punk SHARED)
 
@@ -52,7 +52,7 @@ target_link_libraries(punk
 if(SUPPORT_IMAGES)
   add_compile_definitions(WITH_IMAGES)
 
-  CPMAddPackage("gh:libsdl-org/SDL_image#release-2.6.3")
+  CPMAddPackage("gh:libsdl-org/SDL_image#release-2.8.2")
 
   target_sources(punk
     PRIVATE
